@@ -1,9 +1,9 @@
+import Image from "next/image"
+
 import { sanitizeFromUrl } from "@/action/helpers"
 import { env } from "@/constants"
 import { AuthShell } from "@/components/auth/auth-shell"
-import { LogoMark } from "@/components/auth/logo-mark"
 import { RegisterForm } from "@/components/auth/register-form"
-import { Card, CardContent } from "@/components/ui/card"
 
 export const metadata = {
   title: "Register | Postmatic",
@@ -20,29 +20,27 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
   )
 
   return (
-    <AuthShell>
-      <Card className="w-full max-w-[560px] rounded-[22px] border-0 bg-white/95 py-0 shadow-lg ring-1 ring-[#dbe2ef]">
-        <CardContent className="space-y-6 px-6 py-7 sm:px-8 sm:py-8">
-          <div className="flex justify-center">
-            <LogoMark
-              className="gap-2"
-              badgeClassName="size-10 bg-[#3252e1] ring-[#3252e1]"
-              textClassName="text-2xl text-[#111a2c]"
+    <AuthShell variant="signup">
+      <div className="w-full max-w-md">
+        <div className="mb-8 flex flex-col items-center justify-center lg:items-start lg:justify-start">
+          <div className="mb-6 flex items-center gap-2 lg:hidden">
+            <Image
+              src="/logofull.png"
+              alt="Postmatic"
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-lg"
             />
           </div>
 
-          <div className="space-y-1 text-center">
-            <h1 className="text-3xl font-semibold tracking-tight text-[#101a2d]">
-              Create Postmatic account
-            </h1>
-            <p className="text-base text-[#667085]">
-              Register with your email and verify your account.
-            </p>
-          </div>
+          <h2 className="mb-1 text-2xl font-bold text-gray-900">Create an account</h2>
+          <p className="text-sm text-gray-500">
+            Start your journey with Postmatic today.
+          </p>
+        </div>
 
-          <RegisterForm from={from} />
-        </CardContent>
-      </Card>
+        <RegisterForm from={from} />
+      </div>
     </AuthShell>
   )
 }

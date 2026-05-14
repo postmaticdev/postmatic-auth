@@ -1,8 +1,9 @@
 "use client"
 
-import { useActionState, useState } from "react"
+import { startTransition, useActionState, useState } from "react"
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Mail } from "lucide-react"
 import { useForm } from "react-hook-form"
 
 import {
@@ -16,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   resendVerificationSchema,
   type ResendVerificationValues,
@@ -56,21 +58,23 @@ export function VerifyAccountForm({ token, from, status }: VerifyAccountFormProp
     }
 
     const payload = new FormData(formElement)
-    resendAction(payload)
+    startTransition(() => {
+      resendAction(payload)
+    })
   })
 
   return (
     <div className="space-y-4">
       {status.valid ? (
-        <Alert>
-          <AlertTitle>Link verifikasi valid</AlertTitle>
+        <Alert className="border-blue-100 bg-blue-50 text-blue-900">
+          <AlertTitle>Verification link is valid</AlertTitle>
           <AlertDescription>
-            Lanjutkan verifikasi untuk akun {status.data?.email}.
+            Continue verification for {status.data?.email}.
           </AlertDescription>
         </Alert>
       ) : (
-        <Alert variant="destructive">
-          <AlertTitle>Link verifikasi bermasalah</AlertTitle>
+        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-700">
+          <AlertTitle>Verification link has an issue</AlertTitle>
           <AlertDescription>{status.message}</AlertDescription>
         </Alert>
       )}
@@ -90,9 +94,8 @@ export function VerifyAccountForm({ token, from, status }: VerifyAccountFormProp
 
           <Button
             type="submit"
-            size="lg"
             disabled={verifyPending || !verifyTurnstileAccepted}
-            className="h-11 w-full rounded-xl bg-gradient-to-r from-[#3252e1] to-[#5b62ec] text-base font-semibold text-white hover:opacity-95"
+            className="mt-2 h-auto w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
           >
             {verifyPending ? "Verifying..." : "Verify account"}
           </Button>
@@ -100,15 +103,25 @@ export function VerifyAccountForm({ token, from, status }: VerifyAccountFormProp
       ) : (
         <form onSubmit={submitResend} className="space-y-4" noValidate>
           <input type="hidden" name="from" value={from} readOnly />
-          <Input
-            type="email"
-            defaultValue={status.email ?? ""}
-            placeholder="Masukkan email untuk kirim ulang verifikasi"
-            aria-invalid={resendForm.formState.errors.email ? "true" : "false"}
-            className="h-11 rounded-xl border-[#d8deea] px-3 text-sm"
-            {...resendForm.register("email")}
-          />
-          <FieldError errors={[resendForm.formState.errors.email]} />
+
+          <div>
+            <Label htmlFor="resend-email" className="mb-1.5 block text-sm font-medium text-gray-700">
+              Email address
+            </Label>
+            <div className="relative">
+              <Mail className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Input
+                id="resend-email"
+                type="email"
+                defaultValue={status.email ?? ""}
+                placeholder="you@example.com"
+                aria-invalid={resendForm.formState.errors.email ? "true" : "false"}
+                className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-4 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+                {...resendForm.register("email")}
+              />
+            </div>
+            <FieldError className="mt-1.5" errors={[resendForm.formState.errors.email]} />
+          </div>
 
           <TurnstileWidget
             onTokenStateChange={(hasToken) => {
@@ -119,19 +132,17 @@ export function VerifyAccountForm({ token, from, status }: VerifyAccountFormProp
 
           <Button
             type="submit"
-            variant="outline"
-            size="lg"
             disabled={resendPending || !resendTurnstileAccepted}
-            className="h-11 w-full rounded-xl border-[#cfd7e6] text-sm"
+            className="mt-2 h-auto w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
           >
-            {resendPending ? "Mengirim ulang..." : "Resend verification email"}
+            {resendPending ? "Sending..." : "Resend verification email"}
           </Button>
         </form>
       )}
 
-      <p className="text-center text-sm text-[#5e6778]">
-        Kembali ke{" "}
-        <Link href="/login" className="font-semibold text-[#1f2937] hover:underline">
+      <p className="mt-6 text-center text-sm text-gray-500">
+        Back to{" "}
+        <Link href="/login" className="font-semibold text-blue-600 transition-colors hover:text-blue-700">
           Sign in
         </Link>
       </p>

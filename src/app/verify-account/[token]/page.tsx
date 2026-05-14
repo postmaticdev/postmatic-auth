@@ -1,12 +1,11 @@
+import Image from "next/image"
 import { redirect } from "next/navigation"
 
 import { getVerifyTokenStatus } from "@/action"
 import { sanitizeFromUrl } from "@/action/helpers"
 import { env } from "@/constants"
 import { AuthShell } from "@/components/auth/auth-shell"
-import { LogoMark } from "@/components/auth/logo-mark"
 import { VerifyAccountForm } from "@/components/auth/verify-account-form"
-import { Card, CardContent } from "@/components/ui/card"
 
 export const metadata = {
   title: "Verify account | Postmatic",
@@ -38,29 +37,27 @@ export default async function VerifyAccountPage({
   }
 
   return (
-    <AuthShell>
-      <Card className="w-full max-w-[560px] rounded-[22px] border-0 bg-white/95 py-0 shadow-lg ring-1 ring-[#dbe2ef]">
-        <CardContent className="space-y-6 px-6 py-7 sm:px-8 sm:py-8">
-          <div className="flex justify-center">
-            <LogoMark
-              className="gap-2"
-              badgeClassName="size-10 bg-[#3252e1] ring-[#3252e1]"
-              textClassName="text-2xl text-[#111a2c]"
+    <AuthShell variant="login">
+      <div className="w-full max-w-md">
+        <div className="mb-8 flex flex-col items-center justify-center lg:items-start lg:justify-start">
+          <div className="mb-6 flex items-center gap-2 lg:hidden">
+            <Image
+              src="/logofull.png"
+              alt="Postmatic"
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-lg"
             />
           </div>
 
-          <div className="space-y-1 text-center">
-            <h1 className="text-3xl font-semibold tracking-tight text-[#101a2d]">
-              Verify your account
-            </h1>
-            <p className="text-base text-[#667085]">
-              Validate your verification link and continue to Postmatic dashboard.
-            </p>
-          </div>
+          <h2 className="mb-1 text-2xl font-bold text-gray-900">Verify your account</h2>
+          <p className="text-sm text-gray-500">
+            Confirm your account status and continue securely.
+          </p>
+        </div>
 
-          <VerifyAccountForm token={token} from={from} status={status} />
-        </CardContent>
-      </Card>
+        <VerifyAccountForm token={token} from={from} status={status} />
+      </div>
     </AuthShell>
   )
 }

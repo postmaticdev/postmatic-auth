@@ -1,9 +1,10 @@
 "use client"
 
-import { useActionState, useState } from "react"
+import { startTransition, useActionState, useMemo, useState } from "react"
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { Eye, EyeOff, Lock, Mail, User } from "lucide-react"
+import { useForm, useWatch } from "react-hook-form"
 
 import { initialActionState, registerAction } from "@/action"
 import { FormMessage } from "@/components/auth/form-message"
@@ -23,6 +24,8 @@ type RegisterFormProps = {
 
 export function RegisterForm({ from }: RegisterFormProps) {
   const [turnstileAccepted, setTurnstileAccepted] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [state, formAction, isPending] = useActionState(
     registerAction,
     initialActionState
@@ -34,8 +37,23 @@ export function RegisterForm({ from }: RegisterFormProps) {
       name: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
   })
+
+  const password = useWatch({ control: form.control, name: "password" }) ?? ""
+  const confirmPassword = useWatch({
+    control: form.control,
+    name: "confirmPassword",
+  }) ?? ""
+
+  const passwordMatchState = useMemo(() => {
+    if (!confirmPassword.length) {
+      return "idle"
+    }
+
+    return password === confirmPassword ? "match" : "mismatch"
+  }, [confirmPassword, password])
 
   const submitRegister = form.handleSubmit((_values, event) => {
     const formElement = event?.target as HTMLFormElement | undefined
@@ -45,57 +63,123 @@ export function RegisterForm({ from }: RegisterFormProps) {
     }
 
     const payload = new FormData(formElement)
-    formAction(payload)
+    startTransition(() => {
+      formAction(payload)
+    })
   })
 
   return (
     <form onSubmit={submitRegister} className="space-y-4" noValidate>
       <input type="hidden" name="from" value={from} readOnly />
 
-      <div className="space-y-2">
-        <Label htmlFor="name" className="text-sm text-[#3a4558]">
+      <div>
+        <Label htmlFor="name" className="mb-1.5 block text-sm font-medium text-gray-700">
           Full name
         </Label>
-        <Input
-          id="name"
-          placeholder="Your name"
-          aria-invalid={form.formState.errors.name ? "true" : "false"}
-          className="h-11 rounded-xl border-[#d8deea] px-3 text-sm"
-          {...form.register("name")}
-        />
-        <FieldError errors={[form.formState.errors.name]} />
+        <div className="relative">
+          <User className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Input
+            id="name"
+            placeholder="John Doe"
+            aria-invalid={form.formState.errors.name ? "true" : "false"}
+            className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-4 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+            {...form.register("name")}
+          />
+        </div>
+        <FieldError className="mt-1.5" errors={[form.formState.errors.name]} />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm text-[#3a4558]">
+      <div>
+        <Label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
           Email address
         </Label>
-        <Input
-          id="email"
-          type="email"
-          autoComplete="email"
-          placeholder="user@example.com"
-          aria-invalid={form.formState.errors.email ? "true" : "false"}
-          className="h-11 rounded-xl border-[#d8deea] px-3 text-sm"
-          {...form.register("email")}
-        />
-        <FieldError errors={[form.formState.errors.email]} />
+        <div className="relative">
+          <Mail className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            aria-invalid={form.formState.errors.email ? "true" : "false"}
+            className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-4 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+            {...form.register("email")}
+          />
+        </div>
+        <FieldError className="mt-1.5" errors={[form.formState.errors.email]} />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="password" className="text-sm text-[#3a4558]">
+      <div>
+        <Label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">
           Password
         </Label>
-        <Input
-          id="password"
-          type="password"
-          autoComplete="new-password"
-          placeholder="Minimum 6 alphanumeric characters"
-          aria-invalid={form.formState.errors.password ? "true" : "false"}
-          className="h-11 rounded-xl border-[#d8deea] px-3 text-sm"
-          {...form.register("password")}
-        />
-        <FieldError errors={[form.formState.errors.password]} />
+        <div className="relative">
+          <Lock className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="new-password"
+            placeholder="Create a strong password"
+            aria-invalid={form.formState.errors.password ? "true" : "false"}
+            className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-11 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+            {...form.register("password")}
+          />
+          <button
+            type="button"
+            onClick={() => {
+              setShowPassword((current) => !current)
+            }}
+            className="absolute top-1/2 right-3.5 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
+        <FieldError className="mt-1.5" errors={[form.formState.errors.password]} />
+        <p className="mt-1.5 text-xs text-gray-500">
+          Password must be minimum 6 characters and alphanumeric only.
+        </p>
+      </div>
+
+      <div>
+        <Label
+          htmlFor="confirmPassword"
+          className="mb-1.5 block text-sm font-medium text-gray-700"
+        >
+          Confirm password
+        </Label>
+        <div className="relative">
+          <Lock className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Input
+            id="confirmPassword"
+            type={showConfirmPassword ? "text" : "password"}
+            autoComplete="new-password"
+            placeholder="Repeat your password"
+            aria-invalid={form.formState.errors.confirmPassword ? "true" : "false"}
+            className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-11 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+            {...form.register("confirmPassword")}
+          />
+          <button
+            type="button"
+            onClick={() => {
+              setShowConfirmPassword((current) => !current)
+            }}
+            className="absolute top-1/2 right-3.5 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+            aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+          >
+            {showConfirmPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+        <FieldError className="mt-1.5" errors={[form.formState.errors.confirmPassword]} />
+        {passwordMatchState === "mismatch" ? (
+          <p className="mt-1.5 text-xs text-red-500">Passwords do not match.</p>
+        ) : null}
+        {passwordMatchState === "match" ? (
+          <p className="mt-1.5 text-xs text-green-600">Passwords match.</p>
+        ) : null}
       </div>
 
       <TurnstileWidget
@@ -108,17 +192,16 @@ export function RegisterForm({ from }: RegisterFormProps) {
 
       <Button
         type="submit"
-        size="lg"
         disabled={isPending || !turnstileAccepted}
-        className="h-11 w-full rounded-xl bg-gradient-to-r from-[#3252e1] to-[#5b62ec] text-base font-semibold text-white hover:opacity-95"
+        className="mt-2 h-auto w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
       >
         {isPending ? "Creating account..." : "Create account"}
       </Button>
 
-      <p className="text-center text-sm text-[#5e6778]">
-        Sudah punya akun?{" "}
-        <Link href="/login" className="font-semibold text-[#1f2937] hover:underline">
-          Sign in
+      <p className="mt-6 text-center text-sm text-gray-500">
+        Already have an account?{" "}
+        <Link href="/login" className="font-semibold text-blue-600 transition-colors hover:text-blue-700">
+          Login
         </Link>
       </p>
     </form>

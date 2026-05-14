@@ -1,3 +1,8 @@
+export {
+  getForgotPasswordTokenStatus,
+  requestForgotPasswordAction,
+  submitForgotPasswordResetAction,
+} from "./forgot-password"
 export { beginGoogleOAuthLoginAction } from "./google-oauth"
 export { loginAction } from "./login"
 export { registerAction } from "./register"
