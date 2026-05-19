@@ -18,6 +18,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - `/verify-account/[token]`: validate verify-token and submit verification.
 - `/forgot-password`: request reset link flow.
 - `/forgot-password/[token]`: validate reset link and submit new password.
+- `/invite-member/[token]`: validate business invitation token and submit invitation answer.
 - `/` redirects to `/login`.
 
 ### Auth API Mapping (from `auth.json`)
@@ -27,6 +28,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - `POST /api/account/auth/verify/:token?from=...`
 - `POST /api/account/auth/resend-email-verification`
 - `GET /api/account/google-oauth/login?from=...`
+- `GET /api/business/member/~/{{memberInvitationToken}}/verify`
+- `POST /api/business/member/~/{{memberInvitationToken}}/answer`
 
 ### Cookie Policy
 - `accessToken`: regular cookie (not httpOnly), share domain `.postmatic.id`.
@@ -63,6 +66,7 @@ Recommended keys:
 - `src/action/auth-client.ts`: low-level HTTP client to auth API.
 - `src/action/login.ts`, `register.ts`, `verify-account.ts`: server actions per flow.
 - `src/action/forgot-password.ts`: forgot/reset password actions (currently mock-ready).
+- `src/action/invite-member.ts`: business invitation verify/answer flow.
 - `src/action/helpers.ts`: redirect sanitization, response normalization.
 - `src/components/auth/*`: auth shell and form UI.
 - `src/constants/env.ts`: env parsing.
@@ -84,3 +88,4 @@ Recommended keys:
 - If adding new auth flows, keep server-side token/cookie mutation inside `src/action/*`.
 - Keep refresh token out of client-readable storage.
 - If verify callback contract changes, update query key settings in env instead of hardcoding.
+- Invite member answer currently redirects to `POSTMATIC_DEFAULT_FROM_URL` after success.

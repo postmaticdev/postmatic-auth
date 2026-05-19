@@ -1,10 +1,10 @@
 import type { ReactNode } from "react"
 import Image from "next/image"
-import { BookOpen, Lock, Repeat2, ShieldCheck } from "lucide-react"
+import { BookOpen, Lock, Repeat2, ShieldCheck, Users } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-type AuthShellVariant = "login" | "signup" | "forgot-password"
+type AuthShellVariant = "login" | "signup" | "forgot-password" | "invite-member"
 
 type AuthShellProps = {
   children: ReactNode
@@ -67,6 +67,23 @@ const variantContent: Record<
         icon: <Lock className="h-5 w-5 text-blue-300" />,
         title: "Security",
         description: "The reset link is valid for a limited time.",
+      },
+    ],
+  },
+  "invite-member": {
+    heading: "Business invitation.",
+    subtext:
+      "Review your workspace invitation details and decide whether to join or decline.",
+    cards: [
+      {
+        icon: <Users className="h-5 w-5 text-blue-300" />,
+        title: "Team Access",
+        description: "Join your invited business workspace securely.",
+      },
+      {
+        icon: <ShieldCheck className="h-5 w-5 text-blue-300" />,
+        title: "Trusted Flow",
+        description: "Invitation links are validated before confirmation.",
       },
     ],
   },

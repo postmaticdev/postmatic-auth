@@ -44,3 +44,20 @@ export type AuthVerifyPayload = AuthVerifyStatusPayload & {
   accessToken: string
   refreshToken: string
 }
+
+export type BusinessMemberInvitationPayload = {
+  memberId: number
+  profileName: string
+  profileEmail: string
+  profileId: string
+  profileImage: string | null
+  businessName: string
+  businessRootId: number
+  businessLogo: string | null
+  role: string
+  status?: string
+  valid: boolean
+  alreadyMember: boolean
+  expiredAt: string
+  createdAt: string
+}
