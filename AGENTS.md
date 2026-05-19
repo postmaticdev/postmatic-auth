@@ -19,6 +19,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - `/forgot-password`: request reset link flow.
 - `/forgot-password/[token]`: validate reset link and submit new password.
 - `/invite-member/[token]`: validate business invitation token and submit invitation answer.
+- `/social-platform/[token]`: validate pending social platform OAuth connection and confirm selected account.
 - `/` redirects to `/login`.
 
 ### Auth API Mapping (from `auth.json`)
@@ -30,6 +31,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - `GET /api/account/google-oauth/login?from=...`
 - `GET /api/business/member/~/{{memberInvitationToken}}/verify`
 - `POST /api/business/member/~/{{memberInvitationToken}}/answer`
+- `GET /api/business/connected-platform/{businessRootId}/oauth/pending/{tempCode}`
+- `POST /api/business/connected-platform/{businessRootId}/connect-account`
 
 ### Cookie Policy
 - `accessToken`: regular cookie (not httpOnly), share domain `.postmatic.id`.
@@ -61,12 +64,14 @@ Recommended keys:
 - `POSTMATIC_REFRESH_COOKIE_NAME`
 - `POSTMATIC_ACCESS_QUERY_KEY`
 - `POSTMATIC_REFRESH_QUERY_KEY`
+- `POSTMATIC_SOCIAL_PLATFORM_BUSINESS_ROOT_ID` (optional fallback for pending endpoint path)
 
 ### Code Organization
 - `src/action/auth-client.ts`: low-level HTTP client to auth API.
 - `src/action/login.ts`, `register.ts`, `verify-account.ts`: server actions per flow.
 - `src/action/forgot-password.ts`: forgot/reset password actions (currently mock-ready).
 - `src/action/invite-member.ts`: business invitation verify/answer flow.
+- `src/action/social-platform.ts`: pending social platform verify/connect flow.
 - `src/action/helpers.ts`: redirect sanitization, response normalization.
 - `src/components/auth/*`: auth shell and form UI.
 - `src/constants/env.ts`: env parsing.
@@ -89,3 +94,4 @@ Recommended keys:
 - Keep refresh token out of client-readable storage.
 - If verify callback contract changes, update query key settings in env instead of hardcoding.
 - Invite member answer currently redirects to `POSTMATIC_DEFAULT_FROM_URL` after success.
+- Social platform connect redirects to sanitized `from` query or `POSTMATIC_DEFAULT_FROM_URL` after success.

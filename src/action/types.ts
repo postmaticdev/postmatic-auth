@@ -61,3 +61,53 @@ export type BusinessMemberInvitationPayload = {
   expiredAt: string
   createdAt: string
 }
+
+export type SocialPlatformBusinessPayload = {
+  businessRootId: number
+  name: string
+  primaryLogoUrl: string | null
+  category: string | null
+  description: string | null
+  websiteUrl: string | null
+}
+
+export type SocialPlatformAccountPayload = {
+  tempCodeAccount: string
+  platformUserId: string
+  platformUserName: string
+  platformUserEmail: string | null
+  platformIconUrl: string | null
+  platformScopes: string[]
+}
+
+export type SocialPlatformPendingPayload = {
+  tempCode: string
+  platformCode: string
+  business: SocialPlatformBusinessPayload
+  selectionRequired: boolean
+  accounts: SocialPlatformAccountPayload[]
+}
+
+export type SocialPlatformConnectedPlatformPayload = {
+  id: number
+  businessRootId: number
+  platformCode: string
+  platformName: string
+  platformId: number
+  platformIsActive: boolean
+  platformUserId: string
+  platformIconUrl: string | null
+  platformUserName: string
+  platformUserEmail: string | null
+  platformScopes: string[]
+  platformTokenExpiredAt: string
+  platformMetadata: Record<string, unknown> | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type SocialPlatformConnectPayload = {
+  selectionRequired: boolean
+  connectedPlatform: SocialPlatformConnectedPlatformPayload | null
+  selectableAccounts: SocialPlatformAccountPayload[]
+}

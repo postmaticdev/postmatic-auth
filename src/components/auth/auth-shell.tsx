@@ -1,10 +1,22 @@
 import type { ReactNode } from "react"
 import Image from "next/image"
-import { BookOpen, Lock, Repeat2, ShieldCheck, Users } from "lucide-react"
+import {
+  BookOpen,
+  Link2,
+  Lock,
+  Repeat2,
+  ShieldCheck,
+  Users,
+} from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-type AuthShellVariant = "login" | "signup" | "forgot-password" | "invite-member"
+type AuthShellVariant =
+  | "login"
+  | "signup"
+  | "forgot-password"
+  | "invite-member"
+  | "social-platform"
 
 type AuthShellProps = {
   children: ReactNode
@@ -84,6 +96,23 @@ const variantContent: Record<
         icon: <ShieldCheck className="h-5 w-5 text-blue-300" />,
         title: "Trusted Flow",
         description: "Invitation links are validated before confirmation.",
+      },
+    ],
+  },
+  "social-platform": {
+    heading: "Connect social platform.",
+    subtext:
+      "Review the account information and continue only if you trust this connection request.",
+    cards: [
+      {
+        icon: <Link2 className="h-5 w-5 text-blue-300" />,
+        title: "Secure Linking",
+        description: "Only approved social accounts will be connected.",
+      },
+      {
+        icon: <ShieldCheck className="h-5 w-5 text-blue-300" />,
+        title: "Permission Aware",
+        description: "Scopes are checked before finalizing the integration.",
       },
     ],
   },
