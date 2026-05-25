@@ -69,7 +69,7 @@ Recommended keys:
 ### Code Organization
 - `src/action/auth-client.ts`: low-level HTTP client to auth API.
 - `src/action/login.ts`, `register.ts`, `verify-account.ts`: server actions per flow.
-- `src/action/forgot-password.ts`: forgot/reset password actions (currently mock-ready).
+- `src/action/forgot-password.ts`: forgot/reset password actions (real API).
 - `src/action/invite-member.ts`: business invitation verify/answer flow.
 - `src/action/social-platform.ts`: pending social platform verify/connect flow.
 - `src/action/helpers.ts`: redirect sanitization, response normalization.
@@ -77,12 +77,16 @@ Recommended keys:
 - `src/constants/env.ts`: env parsing.
 
 ### Forgot Password (Current Status)
-- API is not available yet, so flow is mocked in `src/action/forgot-password.ts`.
-- `getForgotPasswordTokenStatus(token)`:
-  - token `"testing"` is treated as valid for development.
-  - token format `testing:<email>` is also treated as valid.
-  - all other tokens are invalid.
-- `requestForgotPasswordAction` and `submitForgotPasswordResetAction` are implemented as Server Actions and already validate Turnstile tokens, so replacing mock with real endpoint is mostly path/contract swap.
+- Flow sudah terhubung ke API real di `src/action/forgot-password.ts`.
+- Endpoint mapping:
+  - `POST /api/account/auth/forgot-password`
+  - `GET /api/account/auth/forgot-password/{forgotPasswordToken}`
+  - `POST /api/account/auth/forgot-password/{forgotPasswordToken}`
+- Error mapping utama:
+  - `PLEASE_WAIT`
+  - `USER_NOT_FOUND`
+  - `INVALID_FORGOT_PASSWORD_TOKEN`
+- Request dan submit reset tetap mewajibkan validasi Turnstile.
 
 ### Redirect Hardening
 - Always sanitize `from` parameter with `sanitizeFromUrl`.

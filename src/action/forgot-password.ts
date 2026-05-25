@@ -2,10 +2,15 @@
 
 import { redirect } from "next/navigation"
 
+import { callAuthApi } from "./auth-client"
+import { humanizeResponseMessage } from "./helpers"
 import { verifyTurnstileToken } from "./turnstile"
-import type { ActionState } from "./types"
-
-const USE_MOCK_FORGOT_PASSWORD = true
+import type {
+  ActionState,
+  ForgotPasswordRequestPayload,
+  ForgotPasswordResetPayload,
+  ForgotPasswordStatusPayload,
+} from "./types"
 
 type ForgotPasswordTokenStatusResult = {
   valid: boolean
@@ -16,16 +21,41 @@ type ForgotPasswordTokenStatusResult = {
 
 const passwordRegex = /^[A-Za-z0-9]{6,}$/
 
-const getMockEmailFromToken = (token: string): string => {
-  if (token === "testing") {
-    return "testing.user@postmatic.id"
+const forgotPasswordResponseMessageMap: Record<string, string> = {
+  PLEASE_WAIT: "Email reset baru saja dikirim. Tunggu sebelum mengirim ulang.",
+  USER_NOT_FOUND: "Akun dengan email tersebut tidak ditemukan.",
+  INVALID_FORGOT_PASSWORD_TOKEN:
+    "Link reset password tidak valid atau sudah kedaluwarsa.",
+}
+
+const getForgotPasswordMessage = (responseMessage?: string): string => {
+  if (!responseMessage) {
+    return "Terjadi kesalahan. Coba lagi."
   }
 
-  if (token.startsWith("testing:")) {
-    return token.slice("testing:".length)
+  return (
+    forgotPasswordResponseMessageMap[responseMessage] ??
+    humanizeResponseMessage(responseMessage)
+  )
+}
+
+const extractRetryAfter = (
+  payload:
+    | ForgotPasswordRequestPayload
+    | ForgotPasswordStatusPayload
+    | ForgotPasswordResetPayload
+    | null
+    | undefined
+): number | undefined => {
+  if (!payload || typeof payload !== "object") {
+    return undefined
   }
 
-  return ""
+  if ("retryAfter" in payload && typeof payload.retryAfter === "number") {
+    return payload.retryAfter
+  }
+
+  return undefined
 }
 
 export const getForgotPasswordTokenStatus = async (
@@ -34,35 +64,30 @@ export const getForgotPasswordTokenStatus = async (
   if (!token) {
     return {
       valid: false,
-      code: "INVALID_RESET_PASSWORD_TOKEN",
+      code: "INVALID_FORGOT_PASSWORD_TOKEN",
       message: "Link reset password tidak ditemukan.",
     }
   }
 
-  if (USE_MOCK_FORGOT_PASSWORD) {
-    const mockEmail = getMockEmailFromToken(token)
+  const encodedToken = encodeURIComponent(token)
+  const { ok, payload } = await callAuthApi<ForgotPasswordStatusPayload>({
+    method: "GET",
+    path: `/api/account/auth/forgot-password/${encodedToken}`,
+  })
 
-    if (mockEmail) {
-      return {
-        valid: true,
-        code: "CHECK_RESET_PASSWORD_TOKEN_SUCCESS",
-        message: "Link reset password valid.",
-        email: mockEmail,
-      }
-    }
-
+  if (!ok || !payload?.data) {
     return {
       valid: false,
-      code: "INVALID_RESET_PASSWORD_TOKEN",
-      message: "Link reset password tidak valid atau sudah kedaluwarsa.",
+      code: payload?.responseMessage,
+      message: getForgotPasswordMessage(payload?.responseMessage),
     }
   }
 
-  // TODO: Replace mock with real API call once endpoint is available.
   return {
-    valid: false,
-    code: "RESET_PASSWORD_API_NOT_IMPLEMENTED",
-    message: "Endpoint reset password belum tersedia.",
+    valid: payload.data.valid,
+    code: payload?.responseMessage,
+    message: getForgotPasswordMessage(payload?.responseMessage),
+    email: payload.data.email,
   }
 }
 
@@ -91,28 +116,28 @@ export const requestForgotPasswordAction = async (
     }
   }
 
-  if (USE_MOCK_FORGOT_PASSWORD) {
-    if (email.includes("wait")) {
-      return {
-        status: "error",
-        code: "PLEASE_WAIT",
-        message: "Email reset baru saja dikirim. Tunggu sebelum mengirim ulang.",
-        retryAfter: 60,
-      }
-    }
+  const { ok, payload } = await callAuthApi<ForgotPasswordRequestPayload>({
+    method: "POST",
+    path: "/api/account/auth/forgot-password",
+    body: {
+      email,
+    },
+  })
 
+  if (!ok) {
     return {
-      status: "success",
-      code: "RESET_PASSWORD_EMAIL_SENT",
-      message: "Kami telah mengirim link reset password ke email Anda.",
+      status: "error",
+      code: payload?.responseMessage,
+      message: getForgotPasswordMessage(payload?.responseMessage),
+      retryAfter: extractRetryAfter(payload?.data ?? null),
     }
   }
 
-  // TODO: Replace mock with real API call once endpoint is available.
   return {
-    status: "error",
-    code: "RESET_PASSWORD_API_NOT_IMPLEMENTED",
-    message: "Endpoint forgot-password belum tersedia.",
+    status: "success",
+    code: payload?.responseMessage,
+    message: "Kami telah mengirim link reset password ke email Anda.",
+    retryAfter: extractRetryAfter(payload?.data ?? null),
   }
 }
 
@@ -160,22 +185,23 @@ export const submitForgotPasswordResetAction = async (
     }
   }
 
-  if (USE_MOCK_FORGOT_PASSWORD) {
-    if (!getMockEmailFromToken(token)) {
-      return {
-        status: "error",
-        code: "INVALID_RESET_PASSWORD_TOKEN",
-        message: "Link reset password tidak valid atau sudah kedaluwarsa.",
-      }
+  const encodedToken = encodeURIComponent(token)
+  const { ok, payload } = await callAuthApi<ForgotPasswordResetPayload>({
+    method: "POST",
+    path: `/api/account/auth/forgot-password/${encodedToken}`,
+    body: {
+      newPassword,
+    },
+  })
+
+  if (!ok || !payload?.data?.valid) {
+    return {
+      status: "error",
+      code: payload?.responseMessage,
+      message: getForgotPasswordMessage(payload?.responseMessage),
+      retryAfter: extractRetryAfter(payload?.data ?? null),
     }
-
-    redirect(`/login?reset=1&email=${encodeURIComponent(email)}`)
   }
 
-  // TODO: Replace mock with real API call once endpoint is available.
-  return {
-    status: "error",
-    code: "RESET_PASSWORD_API_NOT_IMPLEMENTED",
-    message: "Endpoint reset password belum tersedia.",
-  }
+  redirect(`/login?reset=1&email=${encodeURIComponent(email)}`)
 }

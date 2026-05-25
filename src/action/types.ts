@@ -111,3 +111,25 @@ export type SocialPlatformConnectPayload = {
   connectedPlatform: SocialPlatformConnectedPlatformPayload | null
   selectableAccounts: SocialPlatformAccountPayload[]
 }
+
+export type ForgotPasswordRequestPayload = {
+  email: string
+  retryAfter?: number
+}
+
+export type ForgotPasswordStatusPayload = {
+  valid: boolean
+  id: string
+  name: string
+  email: string
+  imageUrl: string | null
+  hasCredentialLogin?: boolean
+}
+
+export type ForgotPasswordResetPayload = {
+  valid: boolean
+  id: string
+  name: string
+  email: string
+  imageUrl: string | null
+}
