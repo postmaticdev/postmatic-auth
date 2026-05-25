@@ -20,6 +20,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - `/forgot-password/[token]`: validate reset link and submit new password.
 - `/invite-member/[token]`: validate business invitation token and submit invitation answer.
 - `/social-platform/[token]`: validate pending social platform OAuth connection and confirm selected account.
+- `/connect-google-with-credentials/[token]`: show Google connect-credentials state result and provide return CTA.
 - `/` redirects to `/login`.
 
 ### Auth API Mapping (from `auth.json`)
@@ -29,6 +30,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - `POST /api/account/auth/verify/:token?from=...`
 - `POST /api/account/auth/resend-email-verification`
 - `GET /api/account/google-oauth/login?from=...`
+- `GET /api/account/google-oauth/connect-credentials/state/{stateToken}`
 - `GET /api/business/member/~/{{memberInvitationToken}}/verify`
 - `POST /api/business/member/~/{{memberInvitationToken}}/answer`
 - `GET /api/business/connected-platform/{businessRootId}/oauth/pending/{tempCode}`
@@ -72,6 +74,7 @@ Recommended keys:
 - `src/action/forgot-password.ts`: forgot/reset password actions (real API).
 - `src/action/invite-member.ts`: business invitation verify/answer flow.
 - `src/action/social-platform.ts`: pending social platform verify/connect flow.
+- `src/action/google-oauth.ts`: Google login + connect-credentials state status.
 - `src/action/helpers.ts`: redirect sanitization, response normalization.
 - `src/components/auth/*`: auth shell and form UI.
 - `src/constants/env.ts`: env parsing.

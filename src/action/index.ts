@@ -7,7 +7,10 @@ export {
   answerInviteMemberAction,
   getInviteMemberStatus,
 } from "./invite-member"
-export { beginGoogleOAuthLoginAction } from "./google-oauth"
+export {
+  beginGoogleOAuthLoginAction,
+  getGoogleConnectCredentialsStateStatus,
+} from "./google-oauth"
 export { loginAction } from "./login"
 export { registerAction } from "./register"
 export {
