@@ -14,6 +14,9 @@ export type AuthApiEnvelope<TData> = {
   metaData?: {
     code?: number
     message?: string
+    requestId?: string
+    path?: string
+    method?: string
   }
   responseMessage?: string
   data?: TData | null
