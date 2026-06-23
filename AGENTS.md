@@ -106,3 +106,6 @@ Recommended keys:
 - If verify callback contract changes, update query key settings in env instead of hardcoding.
 - Invite member answer currently redirects to `POSTMATIC_DEFAULT_FROM_URL` after success.
 - Social platform connect redirects to sanitized `from` query or `POSTMATIC_DEFAULT_FROM_URL` after success.
+
+### Environment
+Using Staging - Production Environtment
