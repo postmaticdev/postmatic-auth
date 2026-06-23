@@ -1,38 +1,40 @@
-import Image from "next/image"
-import Link from "next/link"
+import Image from "next/image";
+import Link from "next/link";
 
-import { sanitizeFromUrl } from "@/action/helpers"
-import { env } from "@/constants"
-import { AuthShell } from "@/components/auth/auth-shell"
-import { LoginForm } from "@/components/auth/login-form"
+import { sanitizeFromUrl } from "@/action/helpers";
+import { env } from "@/constants";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata = {
   title: "Sign in | Postmatic",
-}
+};
 
 type LoginPageProps = {
   searchParams: Promise<{
-    from?: string | string[]
-    email?: string | string[]
-    registered?: string | string[]
-    verified?: string | string[]
-    reset?: string | string[]
-  }>
-}
+    from?: string | string[];
+    email?: string | string[];
+    registered?: string | string[];
+    verified?: string | string[];
+    reset?: string | string[];
+  }>;
+};
 
 const asSingle = (value?: string | string[]): string =>
-  typeof value === "string" ? value : ""
+  typeof value === "string" ? value : "";
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const query = await searchParams
+  const query = await searchParams;
   const from = sanitizeFromUrl(
-    typeof query.from === "string" ? query.from : env.POSTMATIC_DEFAULT_FROM_URL
-  )
+    typeof query.from === "string"
+      ? query.from
+      : env.POSTMATIC_DEFAULT_FROM_URL,
+  );
 
-  const email = asSingle(query.email)
-  const registered = asSingle(query.registered) === "1"
-  const verified = asSingle(query.verified) === "1"
-  const reset = asSingle(query.reset) === "1"
+  const email = asSingle(query.email);
+  const registered = asSingle(query.registered) === "1";
+  const verified = asSingle(query.verified) === "1";
+  const reset = asSingle(query.reset) === "1";
 
   const notice = reset
     ? "Password berhasil direset. Silakan login dengan password baru."
@@ -40,7 +42,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       ? "Registrasi berhasil. Cek email untuk verifikasi akun sebelum login."
       : verified
         ? "Akun sudah terverifikasi. Silakan login."
-        : ""
+        : "";
 
   return (
     <AuthShell variant="login">
@@ -69,23 +71,26 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         />
 
         <p className="mt-8 text-center text-xs text-gray-500">
-          <Link href="#" className="transition-colors hover:text-gray-700">
+          <Link
+            href={env.LANDING_PAGE_URL + "/en/cookie-policy" as string}
+            className="transition-colors hover:text-gray-700"
+          >
             Cookie Policy
           </Link>{" "}
           |{" "}
-          <Link href="#" className="transition-colors hover:text-gray-700">
+          <Link href={env.LANDING_PAGE_URL + "/en/data-deletion" as string} className="transition-colors hover:text-gray-700">
             Data Deletion
           </Link>{" "}
           |{" "}
-          <Link href="#" className="transition-colors hover:text-gray-700">
+          <Link href={env.LANDING_PAGE_URL + "/en/privacy-policy" as string} className="transition-colors hover:text-gray-700">
             Privacy Policy
           </Link>{" "}
           |{" "}
-          <Link href="#" className="transition-colors hover:text-gray-700">
+          <Link href={env.LANDING_PAGE_URL + "/en/terms-of-service" as string} className="transition-colors hover:text-gray-700">
             Terms of Service
           </Link>
         </p>
       </div>
     </AuthShell>
-  )
+  );
 }
