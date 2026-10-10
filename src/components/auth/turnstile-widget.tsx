@@ -149,7 +149,7 @@ export function TurnstileWidget({
     <div className="space-y-2">
       <div
         ref={containerRef}
-        className="min-h-16 rounded-xl border border-[#dde3ef] bg-[#fbfcff] p-2"
+        className="flex min-h-[72px] w-full items-center justify-center rounded-xl border border-gray-200 bg-gray-50/50 p-2"
       />
       <input type="hidden" name={inputName} value={token} readOnly />
       {missingSiteKey ? (

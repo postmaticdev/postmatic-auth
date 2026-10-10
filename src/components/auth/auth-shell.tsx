@@ -141,7 +141,7 @@ export function AuthShell({
   return (
     <main className="flex min-h-screen bg-white">
       {/* Left Sticky Panel */}
-      <aside className="sticky top-0 hidden h-screen w-[65%] p-4 lg:block xl:w-[65%]">
+      <aside className="sticky top-0 hidden h-screen w-[60%] p-4 lg:block xl:w-[60%]">
         <div className="relative flex h-full flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-blue-500 to-blue-700 p-10 xl:p-12">
           {/* Top Logo */}
           <div className="relative z-10 flex items-center gap-3">
@@ -157,82 +157,84 @@ export function AuthShell({
             </span>
           </div>
 
-          {/* Middle Content */}
-          <div className="relative z-10 mt-24 flex flex-col gap-6">
-            {content.pill && (
-              <div className="w-fit rounded-full bg-white/20 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-md">
-                {content.pill}
+          {/* Grouped Content and Cards */}
+          <div className="relative z-10 mt-auto flex flex-col gap-10">
+            <div className="flex flex-col gap-6">
+              {content.pill && (
+                <div className="w-fit rounded-full bg-white/20 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-md">
+                  {content.pill}
+                </div>
+              )}
+              <div>
+                <h1 className="max-w-md text-4xl font-semibold leading-tight text-white xl:text-5xl">
+                  {content.heading}
+                </h1>
+                <p className="mt-3 max-w-md text-base leading-relaxed text-white/90">
+                  {content.subtext}
+                </p>
               </div>
-            )}
-            <div>
-              <h1 className="max-w-md text-4xl font-semibold leading-tight text-white xl:text-5xl">
-                {content.heading}
-              </h1>
-              <p className="mt-3 max-w-md text-base leading-relaxed text-white/90">
-                {content.subtext}
-              </p>
             </div>
-          </div>
 
-          {/* Bottom Cards or Steps */}
-          <div className="relative z-10 mt-auto pt-16">
-            {content.steps ? (
-              <div className="grid grid-cols-3 gap-3">
-                {content.steps.map((step) => (
-                  <div
-                    key={step.id}
-                    className={cn(
-                      "flex flex-col justify-between rounded-3xl p-5 shadow-sm transition-all",
-                      step.active
-                        ? "bg-white text-gray-900"
-                        : "bg-white/10 text-white backdrop-blur-md border border-white/20"
-                    )}
-                  >
+            {/* Cards or Steps */}
+            <div>
+              {content.steps ? (
+                <div className="grid grid-cols-3 gap-3">
+                  {content.steps.map((step) => (
                     <div
+                      key={step.id}
                       className={cn(
-                        "flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold",
+                        "flex flex-col justify-between rounded-3xl p-5 shadow-sm transition-all",
                         step.active
-                          ? "bg-blue-600 text-white"
-                          : "bg-white/20 text-white"
+                          ? "bg-white text-gray-900"
+                          : "bg-white/10 text-white backdrop-blur-md border border-white/20"
                       )}
                     >
-                      {step.id}
+                      <div
+                        className={cn(
+                          "flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold",
+                          step.active
+                            ? "bg-blue-600 text-white"
+                            : "bg-white/20 text-white"
+                        )}
+                      >
+                        {step.id}
+                      </div>
+                      <p
+                        className={cn(
+                          "mt-8 text-sm font-medium leading-snug",
+                          step.active ? "text-gray-900" : "text-white/90"
+                        )}
+                      >
+                        {step.title}
+                      </p>
                     </div>
-                    <p
-                      className={cn(
-                        "mt-8 text-sm font-medium leading-snug",
-                        step.active ? "text-gray-900" : "text-white/90"
-                      )}
+                  ))}
+                </div>
+              ) : content.cards ? (
+                <div className="grid gap-3 xl:grid-cols-3">
+                  {content.cards.map((card) => (
+                    <article
+                      key={card.title}
+                      className="flex items-start gap-3 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md"
                     >
-                      {step.title}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : content.cards ? (
-              <div className="grid gap-3 xl:grid-cols-3">
-                {content.cards.map((card) => (
-                  <article
-                    key={card.title}
-                    className="flex items-start gap-3 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md"
-                  >
-                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-white/15">
-                      {card.icon}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold leading-snug text-white">
-                        {card.title}
-                      </p>
-                      <p className="mt-0.5 text-xs leading-relaxed text-white/75">
-                        {card.description}
-                      </p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            ) : null}
-            
-            <p className="mt-8 text-xs text-white/60">
+                      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-white/15">
+                        {card.icon}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold leading-snug text-white">
+                          {card.title}
+                        </p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-white/75">
+                          {card.description}
+                        </p>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <p className="mt-2 text-xs text-white/60">
               &copy; {new Date().getFullYear()} Postmatic. All rights reserved.
             </p>
           </div>

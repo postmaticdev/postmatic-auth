@@ -184,7 +184,7 @@ export function LoginForm({
           <FieldError className="mt-1.5" errors={[form.formState.errors.password]} />
         </div>
 
-        <div className="flex items-center justify-center py-2">
+        <div className="w-full">
           <TurnstileWidget
             onTokenStateChange={(hasToken) => {
               setTurnstileAccepted(hasToken)

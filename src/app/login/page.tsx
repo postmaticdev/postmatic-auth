@@ -47,7 +47,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <AuthShell variant="login">
       <div className="w-full max-w-md">
-        <div className="mb-8 flex flex-col items-center justify-center lg:items-start lg:justify-start">
+        <div className="mb-8 flex flex-col items-center justify-center text-center">
           <div className="mb-6 flex items-center gap-2 lg:hidden">
             <Image
               src="/logofull.png"
@@ -70,26 +70,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           focusPassword={registered || verified}
         />
 
-        <p className="mt-8 text-center text-xs text-gray-500">
-          <Link
-            href={env.LANDING_PAGE_URL + "/en/cookie-policy" as string}
-            className="transition-colors hover:text-gray-700"
-          >
-            Cookie Policy
-          </Link>{" "}
-          |{" "}
-          <Link href={env.LANDING_PAGE_URL + "/en/data-deletion" as string} className="transition-colors hover:text-gray-700">
-            Data Deletion
-          </Link>{" "}
-          |{" "}
-          <Link href={env.LANDING_PAGE_URL + "/en/privacy-policy" as string} className="transition-colors hover:text-gray-700">
-            Privacy Policy
-          </Link>{" "}
-          |{" "}
-          <Link href={env.LANDING_PAGE_URL + "/en/terms-of-service" as string} className="transition-colors hover:text-gray-700">
-            Terms of Service
-          </Link>
-        </p>
       </div>
     </AuthShell>
   );

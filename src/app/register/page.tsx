@@ -22,7 +22,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
   return (
     <AuthShell variant="signup">
       <div className="w-full max-w-md">
-        <div className="mb-8 flex flex-col items-center justify-center lg:items-start lg:justify-start">
+        <div className="mb-8 flex flex-col items-center justify-center text-center">
           <div className="mb-6 flex items-center gap-2 lg:hidden">
             <Image
               src="/logofull.png"

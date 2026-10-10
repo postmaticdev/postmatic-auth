@@ -10,6 +10,7 @@ import { initialActionState, registerAction } from "@/action"
 import { FormMessage } from "@/components/auth/form-message"
 import { TurnstileWidget } from "@/components/auth/turnstile-widget"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,6 +25,7 @@ type RegisterFormProps = {
 
 export function RegisterForm({ from }: RegisterFormProps) {
   const [turnstileAccepted, setTurnstileAccepted] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [state, formAction, isPending] = useActionState(
@@ -182,17 +184,40 @@ export function RegisterForm({ from }: RegisterFormProps) {
         ) : null}
       </div>
 
-      <TurnstileWidget
-        onTokenStateChange={(hasToken) => {
-          setTurnstileAccepted(hasToken)
-        }}
-      />
+      <div className="w-full">
+        <TurnstileWidget
+          onTokenStateChange={(hasToken) => {
+            setTurnstileAccepted(hasToken)
+          }}
+        />
+      </div>
+
+      <div className="flex items-center space-x-2 py-1">
+        <Checkbox 
+          id="terms" 
+          checked={termsAccepted} 
+          onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} 
+        />
+        <label
+          htmlFor="terms"
+          className="text-sm font-medium leading-none text-gray-600 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          I agree to the{" "}
+          <Link
+            href="https://docs.postmatic.id/privacy-policy/terms-and-condition"
+            target="_blank"
+            className="text-blue-600 hover:text-blue-700 hover:underline"
+          >
+            Privacy Policy and Terms & Conditions
+          </Link>
+        </label>
+      </div>
 
       <FormMessage state={state} />
 
       <Button
         type="submit"
-        disabled={isPending || !turnstileAccepted}
+        disabled={isPending || !turnstileAccepted || !termsAccepted}
         className="mt-2 h-auto w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
       >
         {isPending ? "Creating account..." : "Create account"}
