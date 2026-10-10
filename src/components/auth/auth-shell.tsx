@@ -128,9 +128,10 @@ export function AuthShell({
   const content = variantContent[variant]
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#212121] p-4 sm:p-8">
-      <div className="flex w-full max-w-[1200px] overflow-hidden rounded-[2.5rem] bg-white p-2 shadow-2xl">
-        <aside className="relative hidden w-1/2 flex-col overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#4A88ED] via-[#35AEF3] to-[#123BA5] p-10 lg:flex xl:p-12">
+    <main className="flex min-h-screen bg-white">
+      {/* Left Sticky Panel */}
+      <aside className="sticky top-0 hidden h-screen w-[45%] p-4 lg:block xl:w-[42%]">
+        <div className="relative flex h-full flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-[#4A88ED] via-[#35AEF3] to-[#123BA5] p-10 xl:p-12">
           {/* Top Logo */}
           <div className="relative z-10 flex items-center gap-3">
             <Image
@@ -219,18 +220,23 @@ export function AuthShell({
                 ))}
               </div>
             ) : null}
+            
+            <p className="mt-8 text-xs text-white/60">
+              &copy; {new Date().getFullYear()} Postmatic. All rights reserved.
+            </p>
           </div>
-        </aside>
+        </div>
+      </aside>
 
-        <section
-          className={cn(
-            "flex flex-1 items-center justify-center p-8 sm:p-12 lg:p-16",
-            formPanelClassName
-          )}
-        >
-          {children}
-        </section>
-      </div>
+      {/* Right Form Panel */}
+      <section
+        className={cn(
+          "flex min-h-screen flex-1 items-center justify-center bg-white p-8 sm:p-12 lg:p-16",
+          formPanelClassName
+        )}
+      >
+        {children}
+      </section>
     </main>
   )
 }
