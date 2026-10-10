@@ -1,15 +1,15 @@
 import { z } from "zod"
 
-const asciiAlphanumericPasswordRegex = /^[A-Za-z0-9]{6,}$/
+const asciiPasswordRegex = /^[\x20-\x7E]{6,}$/
 
 export const loginFormSchema = z.object({
-  email: z.email("Format email tidak valid."),
+  email: z.string().email("Invalid email format."),
   password: z
     .string()
-    .min(6, "Password minimal 6 karakter.")
+    .min(6, "Password must be at least 6 characters.")
     .regex(
-      asciiAlphanumericPasswordRegex,
-      "Password harus alphanumeric (A-Z, a-z, 0-9) tanpa karakter non-ASCII."
+      asciiPasswordRegex,
+      "Password contains invalid characters."
     ),
 })
 
@@ -18,45 +18,48 @@ export const registerFormSchema = z
     name: z
       .string()
       .trim()
-      .min(3, "Nama minimal 3 karakter.")
-      .max(80, "Nama maksimal 80 karakter."),
-    email: z.email("Format email tidak valid."),
+      .min(3, "Name must be at least 3 characters.")
+      .max(80, "Name must be at most 80 characters."),
+    email: z.string().email("Invalid email format."),
     password: z
       .string()
-      .min(6, "Password minimal 6 karakter.")
+      .min(6, "Password must be at least 6 characters.")
       .regex(
-        asciiAlphanumericPasswordRegex,
-        "Password harus alphanumeric (A-Z, a-z, 0-9) tanpa karakter non-ASCII."
+        asciiPasswordRegex,
+        "Password contains invalid characters."
       ),
-    confirmPassword: z.string().min(1, "Konfirmasi password wajib diisi."),
+    confirmPassword: z.string().min(1, "Please confirm your password."),
+    terms: z.string().refine((val) => val === "true" || val === "on", {
+      message: "You must agree to the Terms and Conditions.",
+    }).optional().default("false"),
   })
   .refine((value) => value.password === value.confirmPassword, {
-    message: "Password dan konfirmasi password harus sama.",
+    message: "Passwords do not match.",
     path: ["confirmPassword"],
   })
 
 export const resendVerificationSchema = z.object({
-  email: z.email("Format email tidak valid."),
+  email: z.string().email("Invalid email format."),
 })
 
 export const forgotPasswordRequestSchema = z.object({
-  email: z.email("Format email tidak valid."),
+  email: z.string().email("Invalid email format."),
 })
 
 export const forgotPasswordResetSchema = z
   .object({
-    email: z.email("Format email tidak valid."),
+    email: z.string().email("Invalid email format."),
     newPassword: z
       .string()
-      .min(6, "Password minimal 6 karakter.")
+      .min(6, "Password must be at least 6 characters.")
       .regex(
-        asciiAlphanumericPasswordRegex,
-        "Password harus alphanumeric (A-Z, a-z, 0-9) tanpa karakter non-ASCII."
+        asciiPasswordRegex,
+        "Password contains invalid characters."
       ),
-    confirmPassword: z.string().min(1, "Konfirmasi password wajib diisi."),
+    confirmPassword: z.string().min(1, "Please confirm your password."),
   })
   .refine((value) => value.newPassword === value.confirmPassword, {
-    message: "Password dan konfirmasi password harus sama.",
+    message: "Passwords do not match.",
     path: ["confirmPassword"],
   })
 

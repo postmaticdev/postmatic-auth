@@ -37,11 +37,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const reset = asSingle(query.reset) === "1";
 
   const notice = reset
-    ? "Password berhasil direset. Silakan login dengan password baru."
+    ? "Password successfully reset. Please sign in with your new password."
     : registered
-      ? "Registrasi berhasil. Cek email untuk verifikasi akun sebelum login."
+      ? "Registration successful. Please check your email to verify your account before signing in."
       : verified
-        ? "Akun sudah terverifikasi. Silakan login."
+        ? "Account verified. Please sign in."
         : "";
 
   return (
@@ -57,7 +57,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               className="h-10 w-10 rounded-lg"
             />
           </div>
-          <h2 className="mb-1 text-2xl font-bold text-gray-900">Sign in</h2>
+          <h2 className="mb-1 text-2xl font-bold text-gray-900">SIGN IN</h2>
           <p className="text-sm text-gray-500">
             Welcome back! Please enter your details.
           </p>
@@ -67,7 +67,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           from={from}
           initialEmail={email}
           notice={notice}
-          focusPassword={registered || verified}
+          focusPassword={verified}
         />
 
       </div>

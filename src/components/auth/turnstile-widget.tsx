@@ -23,9 +23,12 @@ declare global {
   }
 }
 
+import type { ActionState } from "@/action/types"
+
 type TurnstileWidgetProps = {
   inputName?: string
   onTokenStateChange?: (hasToken: boolean) => void
+  actionState?: ActionState
 }
 
 const TURNSTILE_SCRIPT_ID = "postmatic-turnstile-script"
@@ -33,6 +36,7 @@ const TURNSTILE_SCRIPT_ID = "postmatic-turnstile-script"
 export function TurnstileWidget({
   inputName = "turnstileToken",
   onTokenStateChange,
+  actionState,
 }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const widgetIdRef = useRef<string | null>(null)
@@ -49,26 +53,6 @@ export function TurnstileWidget({
 
     let cancelled = false
     const parentForm = containerRef.current?.closest("form")
-
-    const handleFormSubmit = () => {
-      if (!widgetIdRef.current || !window.turnstile) {
-        return
-      }
-
-      // Reset after submit so request still receives the current token.
-      setTimeout(() => {
-        if (!widgetIdRef.current || !window.turnstile) {
-          return
-        }
-
-        window.turnstile.reset(widgetIdRef.current)
-        setToken("")
-        setWidgetReady(false)
-        onTokenStateChange?.(false)
-      }, 0)
-    }
-
-    parentForm?.addEventListener("submit", handleFormSubmit)
 
     const renderWidget = () => {
       if (cancelled || !containerRef.current || !window.turnstile || widgetIdRef.current) {
@@ -137,7 +121,6 @@ export function TurnstileWidget({
 
     return () => {
       cancelled = true
-      parentForm?.removeEventListener("submit", handleFormSubmit)
       if (widgetIdRef.current && window.turnstile) {
         window.turnstile.remove(widgetIdRef.current)
         widgetIdRef.current = null
@@ -145,11 +128,20 @@ export function TurnstileWidget({
     }
   }, [missingSiteKey, onTokenStateChange, siteKey])
 
+  useEffect(() => {
+    if (actionState?.status === "error" && widgetIdRef.current && window.turnstile) {
+      window.turnstile.reset(widgetIdRef.current)
+      setToken("")
+      setWidgetReady(false)
+      onTokenStateChange?.(false)
+    }
+  }, [actionState, onTokenStateChange])
+
   return (
     <div className="space-y-2">
       <div
         ref={containerRef}
-        className="flex min-h-[72px] w-full items-center justify-center rounded-xl border border-gray-200 bg-gray-50/50 p-2"
+        className="flex min-h-[72px] w-full items-center justify-center py-2"
       />
       <input type="hidden" name={inputName} value={token} readOnly />
       {missingSiteKey ? (

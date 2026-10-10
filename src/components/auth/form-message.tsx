@@ -38,10 +38,10 @@ function RetryCountdown({ retryAfter }: RetryCountdownProps) {
   }, [retryAfter])
 
   if (secondsLeft > 0) {
-    return <> Anda dapat mencoba lagi dalam {secondsLeft} detik.</>
+    return <> You can try again in {secondsLeft} seconds.</>
   }
 
-  return <> Anda bisa mencoba lagi sekarang.</>
+  return <> You can try again now.</>
 }
 
 export function FormMessage({ state }: FormMessageProps) {
@@ -59,10 +59,17 @@ export function FormMessage({ state }: FormMessageProps) {
   return (
     <Alert variant={state.status === "error" ? "destructive" : "default"}>
       <AlertTitle>
-        {state.status === "error" ? "Permintaan gagal" : "Permintaan berhasil"}
+        {state.status === "error" ? "Request failed" : "Request successful"}
       </AlertTitle>
       <AlertDescription>
         {state.message}
+        {state.code === "EMAIL_NOT_VERIFIED" ? (
+          <span className="block mt-2">
+            <a href="/resend-verification" className="font-semibold underline hover:text-red-800">
+              Resend verification email
+            </a>
+          </span>
+        ) : null}
         {retryAfter > 0 ? (
           <RetryCountdown key={countdownKey} retryAfter={retryAfter} />
         ) : null}

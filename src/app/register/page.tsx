@@ -33,7 +33,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
             />
           </div>
 
-          <h2 className="mb-1 text-2xl font-bold text-gray-900">Create an account</h2>
+          <h2 className="mb-1 text-2xl font-bold text-gray-900">SIGN UP</h2>
           <p className="text-sm text-gray-500">
             Start your journey with Postmatic today.
           </p>

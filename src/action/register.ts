@@ -9,7 +9,7 @@ import type { ActionState, AuthRegisterPayload } from "./types"
 
 const registerResponseMessageMap: Record<string, string> = {
   EMAIL_ALREADY_EXISTS: "Email already exists. Please use another email.",
-  PLEASE_WAIT: "Email verifikasi sudah dikirim. Tunggu sebelum meminta kirim ulang.",
+  PLEASE_WAIT: "A verification email has already been sent. Please wait before requesting another.",
 }
 
 const extractRetryAfter = (
@@ -43,7 +43,7 @@ export const registerAction = async (
   if (!name || !email || !password) {
     return {
       status: "error",
-      message: "Nama, email, dan password wajib diisi.",
+      message: "Name, email, and password are required.",
       code: "INVALID_INPUT",
     }
   }
@@ -53,7 +53,7 @@ export const registerAction = async (
   if (!turnstile.ok) {
     return {
       status: "error",
-      message: "Verifikasi Turnstile gagal. Silakan coba ulang.",
+      message: "Turnstile verification failed. Please try again.",
       code: turnstile.reason,
     }
   }

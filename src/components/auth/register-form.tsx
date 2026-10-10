@@ -49,14 +49,6 @@ export function RegisterForm({ from }: RegisterFormProps) {
     name: "confirmPassword",
   }) ?? ""
 
-  const passwordMatchState = useMemo(() => {
-    if (!confirmPassword.length) {
-      return "idle"
-    }
-
-    return password === confirmPassword ? "match" : "mismatch"
-  }, [confirmPassword, password])
-
   const submitRegister = form.handleSubmit((_values, event) => {
     const formElement = event?.target as HTMLFormElement | undefined
 
@@ -138,7 +130,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
         </div>
         <FieldError className="mt-1.5" errors={[form.formState.errors.password]} />
         <p className="mt-1.5 text-xs text-gray-500">
-          Password must be minimum 6 characters and alphanumeric only.
+          Password must be at least 6 characters.
         </p>
       </div>
 
@@ -176,28 +168,16 @@ export function RegisterForm({ from }: RegisterFormProps) {
           </button>
         </div>
         <FieldError className="mt-1.5" errors={[form.formState.errors.confirmPassword]} />
-        {passwordMatchState === "mismatch" ? (
-          <p className="mt-1.5 text-xs text-red-500">Passwords do not match.</p>
-        ) : null}
-        {passwordMatchState === "match" ? (
-          <p className="mt-1.5 text-xs text-green-600">Passwords match.</p>
-        ) : null}
       </div>
 
-      <div className="w-full">
-        <TurnstileWidget
-          onTokenStateChange={(hasToken) => {
-            setTurnstileAccepted(hasToken)
-          }}
-        />
-      </div>
-
-      <div className="flex items-center space-x-2 py-1">
+      <div className="flex items-center space-x-2">
         <Checkbox 
           id="terms" 
           checked={termsAccepted} 
           onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} 
+          className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600"
         />
+        <input type="hidden" name="terms" value={termsAccepted ? "true" : "false"} />
         <label
           htmlFor="terms"
           className="text-sm font-medium leading-none text-gray-600 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -213,6 +193,15 @@ export function RegisterForm({ from }: RegisterFormProps) {
         </label>
       </div>
 
+      <div className="w-full">
+        <TurnstileWidget
+          actionState={state}
+          onTokenStateChange={(hasToken) => {
+            setTurnstileAccepted(hasToken)
+          }}
+        />
+      </div>
+
       <FormMessage state={state} />
 
       <Button
@@ -220,13 +209,13 @@ export function RegisterForm({ from }: RegisterFormProps) {
         disabled={isPending || !turnstileAccepted || !termsAccepted}
         className="mt-2 h-auto w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
       >
-        {isPending ? "Creating account..." : "Create account"}
+        {isPending ? "Signing up..." : "SIGN UP"}
       </Button>
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Already have an account?{" "}
         <Link href="/login" className="font-semibold text-blue-600 transition-colors hover:text-blue-700">
-          Login
+          Sign In
         </Link>
       </p>
     </form>

@@ -10,8 +10,8 @@ import type { ActionState, AuthLoginPayload } from "./types"
 
 const loginResponseMessageMap: Record<string, string> = {
   INVALID_CREDENTIALS: "Invalid Credentials. Please check your email and password.",
-  EMAIL_NOT_VERIFIED: "Email belum terverifikasi. Silakan cek inbox atau kirim ulang email verifikasi.",
-  PLEASE_WAIT: "Email verifikasi baru saja dikirim. Tunggu sebelum kirim ulang lagi.",
+  EMAIL_NOT_VERIFIED: "Email not verified. Please check your inbox or resend the verification email.",
+  PLEASE_WAIT: "A verification email was just sent. Please wait before requesting another.",
 }
 
 const extractRetryAfter = (payload: AuthLoginPayload | null | undefined): number | undefined => {
@@ -42,7 +42,7 @@ export const loginAction = async (
   if (!email || !password) {
     return {
       status: "error",
-      message: "Email dan password wajib diisi.",
+      message: "Email and password are required.",
       code: "INVALID_INPUT",
     }
   }
@@ -52,7 +52,7 @@ export const loginAction = async (
   if (!turnstile.ok) {
     return {
       status: "error",
-      message: "Verifikasi Turnstile gagal. Silakan coba ulang.",
+      message: "Turnstile verification failed. Please try again.",
       code: turnstile.reason,
     }
   }

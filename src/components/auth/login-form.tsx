@@ -186,6 +186,7 @@ export function LoginForm({
 
         <div className="w-full">
           <TurnstileWidget
+            actionState={state}
             onTokenStateChange={(hasToken) => {
               setTurnstileAccepted(hasToken)
             }}
@@ -199,14 +200,14 @@ export function LoginForm({
           disabled={isPending || !turnstileAccepted}
           className="mt-2 h-auto w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
         >
-          {isPending ? "Signing in..." : "Sign in"}
+          {isPending ? "Signing in..." : "SIGN IN"}
         </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Don&apos;t have an account?{" "}
         <Link href="/register" className="font-semibold text-blue-600 transition-colors hover:text-blue-700">
-          Sign up
+          Sign Up
         </Link>
       </p>
     </div>
