@@ -184,11 +184,13 @@ export function LoginForm({
           <FieldError className="mt-1.5" errors={[form.formState.errors.password]} />
         </div>
 
-        <TurnstileWidget
-          onTokenStateChange={(hasToken) => {
-            setTurnstileAccepted(hasToken)
-          }}
-        />
+        <div className="flex items-center justify-center py-2">
+          <TurnstileWidget
+            onTokenStateChange={(hasToken) => {
+              setTurnstileAccepted(hasToken)
+            }}
+          />
+        </div>
 
         <FormMessage state={state} />
 

@@ -7,6 +7,7 @@ import {
   Repeat2,
   ShieldCheck,
   Users,
+  Calendar,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -45,6 +46,11 @@ const variantContent: Record<
         description: "Just input your knowledge once",
       },
       {
+        icon: <Calendar className="h-5 w-5 text-white" />,
+        title: "Schedule",
+        description: "Plan and schedule your content easily",
+      },
+      {
         icon: <Repeat2 className="h-5 w-5 text-white" />,
         title: "Automate your social media",
         description: "Let it run automatically forever",
@@ -59,6 +65,11 @@ const variantContent: Record<
         icon: <BookOpen className="h-5 w-5 text-white" />,
         title: "One Time Input Knowledge",
         description: "Just input your knowledge once",
+      },
+      {
+        icon: <Calendar className="h-5 w-5 text-white" />,
+        title: "Schedule",
+        description: "Plan and schedule your content easily",
       },
       {
         icon: <Repeat2 className="h-5 w-5 text-white" />,
@@ -130,8 +141,8 @@ export function AuthShell({
   return (
     <main className="flex min-h-screen bg-white">
       {/* Left Sticky Panel */}
-      <aside className="sticky top-0 hidden h-screen w-[45%] p-4 lg:block xl:w-[42%]">
-        <div className="relative flex h-full flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-[#4A88ED] via-[#35AEF3] to-[#123BA5] p-10 xl:p-12">
+      <aside className="sticky top-0 hidden h-screen w-[65%] p-4 lg:block xl:w-[65%]">
+        <div className="relative flex h-full flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-blue-500 to-blue-700 p-10 xl:p-12">
           {/* Top Logo */}
           <div className="relative z-10 flex items-center gap-3">
             <Image
@@ -199,7 +210,7 @@ export function AuthShell({
                 ))}
               </div>
             ) : content.cards ? (
-              <div className="grid gap-3 xl:grid-cols-2">
+              <div className="grid gap-3 xl:grid-cols-3">
                 {content.cards.map((card) => (
                   <article
                     key={card.title}
