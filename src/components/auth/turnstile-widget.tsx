@@ -46,6 +46,17 @@ export function TurnstileWidget({
   const siteKey = publicEnv.NEXT_PUBLIC_TURNSTILE_SITE_KEY
   const missingSiteKey = !siteKey
 
+  // Parent biasanya mengirim callback inline (fungsi baru tiap render). Simpan
+  // di ref agar widget tidak di-render ulang dan token tidak ter-reset setiap
+  // kali parent re-render.
+  const onTokenStateChangeRef = useRef(onTokenStateChange)
+  useEffect(() => {
+    onTokenStateChangeRef.current = onTokenStateChange
+  }, [onTokenStateChange])
+  const notifyTokenState = (hasToken: boolean) => {
+    onTokenStateChangeRef.current?.(hasToken)
+  }
+
   useEffect(() => {
     if (missingSiteKey) {
       return
@@ -66,24 +77,24 @@ export function TurnstileWidget({
             setToken(nextToken)
             setWidgetReady(true)
             setWidgetError("")
-            onTokenStateChange?.(Boolean(nextToken))
+            notifyTokenState(Boolean(nextToken))
           },
           "expired-callback": () => {
             setToken("")
             setWidgetReady(false)
-            onTokenStateChange?.(false)
+            notifyTokenState(false)
           },
           "error-callback": () => {
             setToken("")
             setWidgetReady(false)
             setWidgetError("Gagal memuat challenge Turnstile, silakan refresh halaman.")
-            onTokenStateChange?.(false)
+            notifyTokenState(false)
           },
           theme: "light",
         })
       } catch {
         setWidgetError("Widget Turnstile gagal dirender.")
-        onTokenStateChange?.(false)
+        notifyTokenState(false)
       }
     }
 
@@ -99,7 +110,7 @@ export function TurnstileWidget({
         existing.addEventListener("load", renderWidget)
         existing.addEventListener("error", () => {
           setWidgetError("Script Turnstile gagal dimuat.")
-          onTokenStateChange?.(false)
+          notifyTokenState(false)
         })
         return
       }
@@ -112,7 +123,7 @@ export function TurnstileWidget({
       script.addEventListener("load", renderWidget)
       script.addEventListener("error", () => {
         setWidgetError("Script Turnstile gagal dimuat.")
-        onTokenStateChange?.(false)
+        notifyTokenState(false)
       })
       document.head.appendChild(script)
     }
@@ -126,16 +137,22 @@ export function TurnstileWidget({
         widgetIdRef.current = null
       }
     }
-  }, [missingSiteKey, onTokenStateChange, siteKey])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- callback dibaca lewat ref
+  }, [missingSiteKey, siteKey])
 
+  // Token Turnstile hanya sekali pakai: reset setiap kali ada hasil submit baru
+  // (error maupun sukses) supaya submit berikutnya mendapat token baru.
+  // Hanya bergantung pada actionState, sehingga re-render parent tidak
+  // menghapus token yang baru saja didapat.
   useEffect(() => {
-    if (actionState?.status === "error" && widgetIdRef.current && window.turnstile) {
-      window.turnstile.reset(widgetIdRef.current)
-      setToken("")
-      setWidgetReady(false)
-      onTokenStateChange?.(false)
-    }
-  }, [actionState, onTokenStateChange])
+    if (!actionState || actionState.status === "idle") return
+    if (!widgetIdRef.current || !window.turnstile) return
+
+    window.turnstile.reset(widgetIdRef.current)
+    setToken("")
+    setWidgetReady(false)
+    onTokenStateChangeRef.current?.(false)
+  }, [actionState])
 
   return (
     <div className="space-y-2">
