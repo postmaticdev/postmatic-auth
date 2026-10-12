@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation"
 
 import { callAuthApi } from "./auth-client"
-import { humanizeResponseMessage } from "./helpers"
+import { getNewPasswordError, humanizeResponseMessage } from "./helpers"
 import { verifyTurnstileToken } from "./turnstile"
 import type {
   ActionState,
@@ -19,11 +19,13 @@ type ForgotPasswordTokenStatusResult = {
   email?: string
 }
 
-const passwordRegex = /^[A-Za-z0-9]{6,}$/
+// Respons generik agar halaman ini tidak bisa dipakai mengecek email mana
+// yang terdaftar (user enumeration).
+const FORGOT_PASSWORD_SENT_MESSAGE =
+  "Jika email terdaftar, kami telah mengirim link reset password ke email tersebut."
 
 const forgotPasswordResponseMessageMap: Record<string, string> = {
   PLEASE_WAIT: "Email reset baru saja dikirim. Tunggu sebelum mengirim ulang.",
-  USER_NOT_FOUND: "Akun dengan email tersebut tidak ditemukan.",
   INVALID_FORGOT_PASSWORD_TOKEN:
     "Link reset password tidak valid atau sudah kedaluwarsa.",
 }
@@ -124,7 +126,7 @@ export const requestForgotPasswordAction = async (
     },
   })
 
-  if (!ok) {
+  if (!ok && payload?.responseMessage !== "USER_NOT_FOUND") {
     return {
       status: "error",
       code: payload?.responseMessage,
@@ -135,8 +137,8 @@ export const requestForgotPasswordAction = async (
 
   return {
     status: "success",
-    code: payload?.responseMessage,
-    message: "Kami telah mengirim link reset password ke email Anda.",
+    code: ok ? payload?.responseMessage : undefined,
+    message: FORGOT_PASSWORD_SENT_MESSAGE,
     retryAfter: extractRetryAfter(payload?.data ?? null),
   }
 }
@@ -167,11 +169,12 @@ export const submitForgotPasswordResetAction = async (
     }
   }
 
-  if (!passwordRegex.test(newPassword)) {
+  const passwordError = getNewPasswordError(newPassword)
+  if (passwordError) {
     return {
       status: "error",
       code: "INVALID_PASSWORD",
-      message: "Password harus alphanumeric dengan minimal 6 karakter.",
+      message: passwordError,
     }
   }
 

@@ -84,7 +84,7 @@ export default async function ConnectGoogleWithCredentialsPage({
             </div>
           </div>
 
-          <Button asChild className="h-auto w-full bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700">
+          <Button asChild className="h-11 sm:h-10 w-full bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700">
             <Link href={status.from}>Kembali ke aplikasi</Link>
           </Button>
         </div>

@@ -69,7 +69,7 @@ export function ResendVerificationForm({ from, initialEmail = "" }: ResendVerifi
               type="email"
               placeholder="you@example.com"
               aria-invalid={form.formState.errors.email ? "true" : "false"}
-              className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-4 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="h-11 sm:h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pr-4 pl-10 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
               {...form.register("email")}
             />
           </div>
@@ -89,7 +89,7 @@ export function ResendVerificationForm({ from, initialEmail = "" }: ResendVerifi
         <Button
           type="submit"
           disabled={isPending || !turnstileAccepted}
-          className="mt-2 h-auto w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
+          className="mt-2 h-11 sm:h-10 w-full rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
         >
           {isPending ? "Sending..." : "Resend verification email"}
         </Button>
@@ -97,7 +97,7 @@ export function ResendVerificationForm({ from, initialEmail = "" }: ResendVerifi
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Back to{" "}
-        <Link href="/login" className="font-semibold text-blue-600 transition-colors hover:text-blue-700">
+        <Link href="/login" className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700">
           SIGN IN
         </Link>
       </p>

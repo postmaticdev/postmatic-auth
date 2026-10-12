@@ -76,7 +76,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
             id="name"
             placeholder="John Doe"
             aria-invalid={form.formState.errors.name ? "true" : "false"}
-            className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-4 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="h-11 sm:h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pr-4 pl-10 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
             {...form.register("name")}
           />
         </div>
@@ -95,7 +95,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
             autoComplete="email"
             placeholder="you@example.com"
             aria-invalid={form.formState.errors.email ? "true" : "false"}
-            className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-4 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="h-11 sm:h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pr-4 pl-10 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
             {...form.register("email")}
           />
         </div>
@@ -114,7 +114,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
             autoComplete="new-password"
             placeholder="Create a strong password"
             aria-invalid={form.formState.errors.password ? "true" : "false"}
-            className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-11 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="h-11 sm:h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pr-11 pl-10 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
             {...form.register("password")}
           />
           <button
@@ -122,7 +122,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
             onClick={() => {
               setShowPassword((current) => !current)
             }}
-            className="absolute top-1/2 right-3.5 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+            className="absolute top-1/2 right-1 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-gray-600"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -149,7 +149,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
             autoComplete="new-password"
             placeholder="Repeat your password"
             aria-invalid={form.formState.errors.confirmPassword ? "true" : "false"}
-            className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-11 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="h-11 sm:h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pr-11 pl-10 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
             {...form.register("confirmPassword")}
           />
           <button
@@ -157,7 +157,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
             onClick={() => {
               setShowConfirmPassword((current) => !current)
             }}
-            className="absolute top-1/2 right-3.5 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+            className="absolute top-1/2 right-1 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-gray-600"
             aria-label={showConfirmPassword ? "Hide password" : "Show password"}
           >
             {showConfirmPassword ? (
@@ -170,17 +170,17 @@ export function RegisterForm({ from }: RegisterFormProps) {
         <FieldError className="mt-1.5" errors={[form.formState.errors.confirmPassword]} />
       </div>
 
-      <div className="flex items-center space-x-2">
+      <div className="flex items-start gap-3">
         <Checkbox 
           id="terms" 
           checked={termsAccepted} 
           onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} 
-          className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600"
+          className="mt-0.5 size-5 data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600"
         />
         <input type="hidden" name="terms" value={termsAccepted ? "true" : "false"} />
         <label
           htmlFor="terms"
-          className="text-sm font-medium leading-none text-gray-600 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          className="text-sm font-medium leading-snug text-gray-600 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
         >
           I agree to the{" "}
           <Link
@@ -207,14 +207,14 @@ export function RegisterForm({ from }: RegisterFormProps) {
       <Button
         type="submit"
         disabled={isPending || !turnstileAccepted || !termsAccepted}
-        className="mt-2 h-auto w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
+        className="mt-2 h-11 sm:h-10 w-full rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
       >
         {isPending ? "Signing up..." : "SIGN UP"}
       </Button>
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-blue-600 transition-colors hover:text-blue-700">
+        <Link href="/login" className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700">
           Sign In
         </Link>
       </p>

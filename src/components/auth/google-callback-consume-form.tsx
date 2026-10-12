@@ -56,13 +56,13 @@ export function GoogleCallbackConsumeForm({
 
       {hasError ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Button asChild variant="outline" className="h-auto py-3 text-sm font-semibold">
+          <Button asChild variant="outline" className="h-11 sm:h-10 text-sm font-semibold">
             <Link href="/login">Kembali ke login</Link>
           </Button>
 
           <Button
             asChild
-            className="h-auto bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+            className="order-first h-11 sm:order-none sm:h-10 bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700"
           >
             <Link href={fallbackFrom}>Kembali ke aplikasi</Link>
           </Button>

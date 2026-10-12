@@ -137,7 +137,6 @@ export function TurnstileWidget({
         widgetIdRef.current = null
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- callback dibaca lewat ref
   }, [missingSiteKey, siteKey])
 
   // Token Turnstile hanya sekali pakai: reset setiap kali ada hasil submit baru

@@ -10,6 +10,8 @@ import type { ActionState, AuthLoginPayload } from "./types"
 
 const loginResponseMessageMap: Record<string, string> = {
   INVALID_CREDENTIALS: "Invalid Credentials. Please check your email and password.",
+  // Sama dengan INVALID_CREDENTIALS agar tidak membocorkan email terdaftar.
+  EMAIL_NOT_FOUND: "Invalid Credentials. Please check your email and password.",
   EMAIL_NOT_VERIFIED: "Email not verified. Please check your inbox or resend the verification email.",
   PLEASE_WAIT: "A verification email was just sent. Please wait before requesting another.",
 }

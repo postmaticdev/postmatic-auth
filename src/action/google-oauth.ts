@@ -14,6 +14,33 @@ type GoogleAuthUrlPayload = {
   authUrl: string
 }
 
+// Penanda bahwa login Google dimulai dari browser ini. Callback
+// /google-callback/[token] hanya diproses bila cookie ini ada, sehingga link
+// callback milik orang lain tidak bisa memaksa korban login ke akun tersebut
+// (login CSRF).
+const GOOGLE_LOGIN_PENDING_COOKIE = "postmaticGoogleLoginPending"
+const GOOGLE_LOGIN_PENDING_MAX_AGE_SECONDS = 15 * 60
+
+const setGoogleLoginPendingCookie = async (): Promise<void> => {
+  const cookieStore = await cookies()
+  cookieStore.set({
+    name: GOOGLE_LOGIN_PENDING_COOKIE,
+    value: crypto.randomUUID(),
+    httpOnly: true,
+    sameSite: "lax",
+    secure: env.POSTMATIC_COOKIE_SECURE,
+    path: "/",
+    maxAge: GOOGLE_LOGIN_PENDING_MAX_AGE_SECONDS,
+  })
+}
+
+const consumeGoogleLoginPendingCookie = async (): Promise<boolean> => {
+  const cookieStore = await cookies()
+  const pending = Boolean(cookieStore.get(GOOGLE_LOGIN_PENDING_COOKIE)?.value)
+  cookieStore.delete(GOOGLE_LOGIN_PENDING_COOKIE)
+  return pending
+}
+
 const oauthDebugEnabled =
   process.env.POSTMATIC_DEBUG_OAUTH === "true" || process.env.NODE_ENV !== "production"
 
@@ -158,6 +185,7 @@ export const beginGoogleOAuthLoginAction = async (
     toGoogleAuthorize: true,
   })
 
+  await setGoogleLoginPendingCookie()
   redirect(authUrl)
 }
 
@@ -249,28 +277,20 @@ const resolveGoogleLoginTempState = async (
   }
 }
 
-export const consumeGoogleLoginTempState = async (
-  token: string
-): Promise<GoogleLoginTempStateConsumeResult> => {
-  const resolved = await resolveGoogleLoginTempState(token)
-
-  if (!resolved.ok || !resolved.accessToken || !resolved.refreshToken) {
-    return resolved
-  }
-
-  await setAuthCookies({
-    accessToken: resolved.accessToken,
-    refreshToken: resolved.refreshToken,
-  })
-
-  redirect(resolved.from)
-}
-
 export const consumeGoogleLoginTempStateAction = async (
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> => {
   const token = String(formData.get("token") ?? "").trim()
+
+  if (!(await consumeGoogleLoginPendingCookie())) {
+    return {
+      status: "error",
+      code: "GOOGLE_LOGIN_TEMP_STATE_INVALID",
+      message: googleLoginTempStateMessageMap.GOOGLE_LOGIN_TEMP_STATE_INVALID,
+    }
+  }
+
   const resolved = await resolveGoogleLoginTempState(token)
 
   if (!resolved.ok || !resolved.accessToken || !resolved.refreshToken) {

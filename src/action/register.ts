@@ -3,7 +3,11 @@
 import { redirect } from "next/navigation"
 
 import { callAuthApi } from "./auth-client"
-import { humanizeResponseMessage, sanitizeFromUrl } from "./helpers"
+import {
+  getNewPasswordError,
+  humanizeResponseMessage,
+  sanitizeFromUrl,
+} from "./helpers"
 import { verifyTurnstileToken } from "./turnstile"
 import type { ActionState, AuthRegisterPayload } from "./types"
 
@@ -36,7 +40,9 @@ export const registerAction = async (
 ): Promise<ActionState> => {
   const name = String(formData.get("name") ?? "").trim()
   const email = String(formData.get("email") ?? "").trim()
-  const password = String(formData.get("password") ?? "").trim()
+  // Password tidak di-trim: disimpan persis seperti yang diketik.
+  const password = String(formData.get("password") ?? "")
+  const termsAccepted = String(formData.get("terms") ?? "") === "true"
   const from = sanitizeFromUrl(String(formData.get("from") ?? ""))
   const turnstileToken = String(formData.get("turnstileToken") ?? "").trim()
 
@@ -45,6 +51,23 @@ export const registerAction = async (
       status: "error",
       message: "Name, email, and password are required.",
       code: "INVALID_INPUT",
+    }
+  }
+
+  if (!termsAccepted) {
+    return {
+      status: "error",
+      message: "You must agree to the Terms and Conditions.",
+      code: "TERMS_NOT_ACCEPTED",
+    }
+  }
+
+  const passwordError = getNewPasswordError(password)
+  if (passwordError) {
+    return {
+      status: "error",
+      message: passwordError,
+      code: "INVALID_PASSWORD",
     }
   }
 

@@ -89,7 +89,7 @@ export function ForgotPasswordResetForm({
         <p className="text-center text-sm text-gray-500">
           <Link
             href="/forgot-password"
-            className="inline-flex items-center gap-1.5 font-semibold text-blue-600 transition-colors hover:text-blue-700"
+            className="-my-2 inline-flex items-center gap-1.5 py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Request new reset link
@@ -121,7 +121,7 @@ export function ForgotPasswordResetForm({
               id="email"
               readOnly
               aria-readonly="true"
-              className="h-auto w-full rounded-xl border-gray-200 bg-gray-100 py-3 pr-4 pl-10 text-sm text-gray-600"
+              className="h-11 sm:h-10 w-full rounded-xl border-gray-200 bg-gray-100 pr-4 pl-10 text-base sm:text-sm text-gray-600"
               {...form.register("email")}
             />
           </div>
@@ -140,7 +140,7 @@ export function ForgotPasswordResetForm({
               autoComplete="new-password"
               placeholder="Create a strong password"
               aria-invalid={form.formState.errors.newPassword ? "true" : "false"}
-              className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-11 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="h-11 sm:h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pr-11 pl-10 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
               {...form.register("newPassword")}
             />
             <button
@@ -148,7 +148,7 @@ export function ForgotPasswordResetForm({
               onClick={() => {
                 setShowPassword((current) => !current)
               }}
-              className="absolute top-1/2 right-3.5 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+              className="absolute top-1/2 right-1 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-gray-600"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -172,7 +172,7 @@ export function ForgotPasswordResetForm({
               autoComplete="new-password"
               placeholder="Repeat your password"
               aria-invalid={form.formState.errors.confirmPassword ? "true" : "false"}
-              className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-11 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="h-11 sm:h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pr-11 pl-10 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
               {...form.register("confirmPassword")}
             />
             <button
@@ -180,7 +180,7 @@ export function ForgotPasswordResetForm({
               onClick={() => {
                 setShowConfirmPassword((current) => !current)
               }}
-              className="absolute top-1/2 right-3.5 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+              className="absolute top-1/2 right-1 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-gray-600"
               aria-label={showConfirmPassword ? "Hide password" : "Show password"}
             >
               {showConfirmPassword ? (
@@ -200,6 +200,7 @@ export function ForgotPasswordResetForm({
         </div>
 
         <TurnstileWidget
+          actionState={state}
           onTokenStateChange={(hasToken) => {
             setTurnstileAccepted(hasToken)
           }}
@@ -210,7 +211,7 @@ export function ForgotPasswordResetForm({
         <Button
           type="submit"
           disabled={isPending || !turnstileAccepted}
-          className="h-auto w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
+          className="h-11 sm:h-10 w-full rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
         >
           {isPending ? "Confirming..." : "Confirm"}
         </Button>
@@ -219,7 +220,7 @@ export function ForgotPasswordResetForm({
       <p className="mt-6 text-center text-sm text-gray-500">
         <Link
           href="/login"
-          className="inline-flex items-center gap-1.5 font-semibold text-blue-600 transition-colors hover:text-blue-700"
+          className="-my-2 inline-flex items-center gap-1.5 py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to login

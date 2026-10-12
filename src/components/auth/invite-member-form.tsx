@@ -82,7 +82,7 @@ export function InviteMemberForm({ token, status }: InviteMemberFormProps) {
         <p className="text-center text-sm text-gray-500">
           <Link
             href="/login"
-            className="font-semibold text-blue-600 transition-colors hover:text-blue-700"
+            className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700"
           >
             Kembali ke login
           </Link>
@@ -172,7 +172,7 @@ export function InviteMemberForm({ token, status }: InviteMemberFormProps) {
               onClick={() => {
                 setSelectedAnswer("reject")
               }}
-              className="h-auto py-3 text-sm font-semibold"
+              className="h-11 sm:h-10 text-sm font-semibold"
             >
               {answerPending && selectedAnswer === "reject"
                 ? "Rejecting..."
@@ -187,7 +187,7 @@ export function InviteMemberForm({ token, status }: InviteMemberFormProps) {
               onClick={() => {
                 setSelectedAnswer("accept")
               }}
-              className="h-auto bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+              className="order-first h-11 sm:order-none sm:h-10 bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700"
             >
               {answerPending && selectedAnswer === "accept"
                 ? "Accepting..."

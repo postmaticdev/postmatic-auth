@@ -94,7 +94,7 @@ export const getVerifyTokenStatus = async (
 
   const { ok, payload } = await callAuthApi<AuthVerifyStatusPayload>({
     method: "GET",
-    path: `/api/account/auth/verify/${token}`,
+    path: `/api/account/auth/verify/${encodeURIComponent(token)}`,
   })
 
   if (!ok || !payload?.data) {
@@ -145,7 +145,7 @@ export const verifyAccountAction = async (
 
   const { ok, payload } = await callAuthApi<AuthVerifyPayload>({
     method: "POST",
-    path: `/api/account/auth/verify/${token}?from=${encodeURIComponent(from)}`,
+    path: `/api/account/auth/verify/${encodeURIComponent(token)}?from=${encodeURIComponent(from)}`,
   })
 
   if (!ok || !payload?.data?.accessToken || !payload?.data?.refreshToken) {
@@ -212,7 +212,9 @@ export const resendVerificationEmailAction = async (
     },
   })
 
-  if (!ok) {
+  // USER_NOT_FOUND dijawab sama seperti sukses agar tidak membocorkan email
+  // mana yang terdaftar.
+  if (!ok && payload?.responseMessage !== "USER_NOT_FOUND") {
     return {
       status: "error",
       message: getVerifyMessage(payload?.responseMessage),
@@ -223,8 +225,8 @@ export const resendVerificationEmailAction = async (
 
   return {
     status: "success",
-    message: "Email verifikasi berhasil dikirim ulang.",
-    code: payload?.responseMessage,
+    message: "Jika akun terdaftar dan belum terverifikasi, email verifikasi telah dikirim.",
+    code: ok ? payload?.responseMessage : undefined,
     retryAfter: getRetryAfter(payload?.data),
   }
 }

@@ -99,7 +99,7 @@ export function SocialPlatformForm({ from, status }: SocialPlatformFormProps) {
         <p className="text-center text-sm text-gray-500">
           <Link
             href={from}
-            className="font-semibold text-blue-600 transition-colors hover:text-blue-700"
+            className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700"
           >
             Kembali ke halaman sebelumnya
           </Link>
@@ -215,7 +215,7 @@ export function SocialPlatformForm({ from, status }: SocialPlatformFormProps) {
                   <RadioGroupItem
                     id={account.tempCodeAccount}
                     value={account.tempCodeAccount}
-                    className="mt-1"
+                    className="mt-0.5 size-5"
                   />
 
                   {renderAccountAvatar(account)}
@@ -233,12 +233,12 @@ export function SocialPlatformForm({ from, status }: SocialPlatformFormProps) {
                     ) : null}
                     <div className="mt-2 flex flex-wrap gap-1">
                       {account.platformScopes.slice(0, 5).map((scope) => (
-                        <Badge key={scope} variant="outline" className="text-[10px]">
+                        <Badge key={scope} variant="outline" className="text-xs">
                           {scope}
                         </Badge>
                       ))}
                       {account.platformScopes.length > 5 ? (
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge variant="outline" className="text-xs">
                           +{account.platformScopes.length - 5}
                         </Badge>
                       ) : null}
@@ -258,7 +258,7 @@ export function SocialPlatformForm({ from, status }: SocialPlatformFormProps) {
             variant="outline"
             disabled={submitPending}
             asChild
-            className="h-auto py-3 text-sm font-semibold"
+            className="h-11 sm:h-10 text-sm font-semibold"
           >
             <Link href={from}>Batal</Link>
           </Button>
@@ -266,7 +266,7 @@ export function SocialPlatformForm({ from, status }: SocialPlatformFormProps) {
           <Button
             type="submit"
             disabled={submitPending || !selectedAccount}
-            className="h-auto bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+            className="order-first h-11 sm:order-none sm:h-10 bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700"
           >
             {submitPending ? "Menghubungkan..." : "Ya, hubungkan akun"}
           </Button>

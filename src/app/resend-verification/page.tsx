@@ -24,7 +24,7 @@ export default async function ResendVerificationPage({ searchParams }: Props) {
         <div className="mb-8">
           <div className="mb-6 lg:hidden">
             <img
-              src="/logomark.png"
+              src="/logofull.png"
               alt="Postmatic Logo"
               className="h-10 w-10 rounded-lg"
             />

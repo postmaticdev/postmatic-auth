@@ -139,7 +139,7 @@ export function AuthShell({
   const content = variantContent[variant]
 
   return (
-    <main className="flex min-h-screen bg-white">
+    <main className="flex min-h-dvh bg-white">
       {/* Left Sticky Panel */}
       <aside className="sticky top-0 hidden h-screen w-[60%] p-4 lg:block xl:w-[60%]">
         <div className="relative flex h-full flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-blue-500 to-blue-700 p-10 xl:p-12">
@@ -244,7 +244,7 @@ export function AuthShell({
       {/* Right Form Panel */}
       <section
         className={cn(
-          "flex min-h-screen flex-1 items-center justify-center bg-white p-8 sm:p-12 lg:p-16",
+          "flex min-h-dvh flex-1 items-center justify-center bg-white px-5 py-10 sm:p-12 lg:p-16",
           formPanelClassName
         )}
       >
