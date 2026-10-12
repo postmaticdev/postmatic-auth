@@ -170,6 +170,15 @@ export function RegisterForm({ from }: RegisterFormProps) {
         <FieldError className="mt-1.5" errors={[form.formState.errors.confirmPassword]} />
       </div>
 
+      <div className="w-full">
+        <TurnstileWidget
+          actionState={state}
+          onTokenStateChange={(hasToken) => {
+            setTurnstileAccepted(hasToken)
+          }}
+        />
+      </div>
+
       <div className="flex items-start gap-3">
         <Checkbox 
           id="terms" 
@@ -191,15 +200,6 @@ export function RegisterForm({ from }: RegisterFormProps) {
             Privacy Policy and Terms & Conditions
           </Link>
         </label>
-      </div>
-
-      <div className="w-full">
-        <TurnstileWidget
-          actionState={state}
-          onTokenStateChange={(hasToken) => {
-            setTurnstileAccepted(hasToken)
-          }}
-        />
       </div>
 
       <FormMessage state={state} />
