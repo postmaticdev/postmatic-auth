@@ -3,11 +3,7 @@
 import { startTransition, useActionState, useMemo, useState } from "react"
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
-import {
-  ArrowLeft,
-  CircleCheck as CheckCircle2,
-  Mail,
-} from "lucide-react"
+import { ArrowLeft, Mail, MailCheck } from "lucide-react"
 import { useForm } from "react-hook-form"
 
 import { initialActionState, requestForgotPasswordAction } from "@/action"
@@ -60,40 +56,50 @@ export function ForgotPasswordRequestForm() {
 
   if (sent) {
     return (
-      <div className="text-center">
-        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-green-100 bg-green-50">
-          <CheckCircle2 className="h-7 w-7 text-green-500" />
+      <div className="flex flex-col items-center text-center" role="status" aria-live="polite">
+        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50">
+          <MailCheck className="h-8 w-8 text-blue-600" strokeWidth={1.75} />
         </div>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">Check your email</h2>
-        <p className="mb-2 text-sm leading-relaxed text-gray-500">
-          We sent a password reset link to
+
+        <h2 className="text-2xl font-bold tracking-tight text-gray-900">Check your email</h2>
+        <p className="mt-2 max-w-xs text-sm leading-relaxed text-gray-500">
+          If an account exists for{" "}
+          <span className="font-medium break-all text-gray-900">{submittedEmail}</span>, you
+          will receive a password reset link shortly.
         </p>
-        <p className="mb-6 text-sm font-semibold text-blue-600">{submittedEmail}</p>
-        <p className="mb-8 text-xs text-gray-400">
-          Did not receive the email?{" "}
+
+        <Button
+          asChild
+          className="mt-8 h-11 w-full rounded-xl bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700 sm:h-10"
+        >
+          <Link href="/login">Back to login</Link>
+        </Button>
+
+        <p className="mt-6 text-sm text-gray-500">
+          Didn&apos;t get it?{" "}
           <button
             type="button"
             onClick={() => {
               setDismissedSuccess(true)
             }}
-            className="font-semibold text-blue-600 transition-colors hover:text-blue-700"
+            className="-my-2 py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700"
           >
-            Click to resend
+            Resend
           </button>
         </p>
-        <Link
-          href="/login"
-          className="-my-2 inline-flex items-center gap-1.5 py-2 text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to login
-        </Link>
       </div>
     )
   }
 
   return (
     <>
+      <div className="mb-8 text-center lg:text-left">
+        <h2 className="mb-1 text-2xl font-bold text-gray-900">Forgot password?</h2>
+        <p className="text-sm leading-relaxed text-gray-500">
+          No worries! Enter your email below and we will send you a secure reset link.
+        </p>
+      </div>
+
       <form onSubmit={submitForgotPassword} className="space-y-4" noValidate>
         <div>
           <Label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
