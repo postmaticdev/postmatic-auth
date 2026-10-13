@@ -3,9 +3,7 @@
 import { redirect } from "next/navigation"
 
 import { callAuthApi } from "./auth-client"
-import { setAuthCookies } from "./cookies"
 import {
-  buildRedirectWithTokens,
   humanizeResponseMessage,
   sanitizeFromUrl,
 } from "./helpers"
@@ -148,13 +146,7 @@ export const verifyAccountAction = async (
     path: `/api/account/auth/verify/${encodeURIComponent(token)}?from=${encodeURIComponent(from)}`,
   })
 
-  if (!ok || !payload?.data?.accessToken || !payload?.data?.refreshToken) {
-    if (payload?.responseMessage === "USER_ALREADY_VERIFIED") {
-      redirect(
-        `/login?verified=1&email=${encodeURIComponent(email)}&from=${encodeURIComponent(from)}`
-      )
-    }
-
+  if (!ok && payload?.responseMessage !== "USER_ALREADY_VERIFIED") {
     return {
       status: "error",
       message: getVerifyMessage(payload?.responseMessage),
@@ -163,17 +155,9 @@ export const verifyAccountAction = async (
     }
   }
 
-  await setAuthCookies({
-    accessToken: payload.data.accessToken,
-    refreshToken: payload.data.refreshToken,
-  })
-
+  // Alur: verifikasi berhasil -> user diarahkan ke halaman login (tidak auto-login).
   redirect(
-    buildRedirectWithTokens(
-      from,
-      payload.data.accessToken,
-      payload.data.refreshToken
-    )
+    `/login?verified=1&email=${encodeURIComponent(email)}&from=${encodeURIComponent(from)}`
   )
 }
 
