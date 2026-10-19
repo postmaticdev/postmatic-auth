@@ -206,7 +206,7 @@ export function LoginForm({
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Don&apos;t have an account?{" "}
-        <Link href="/register" className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700">
+        <Link href={`/register?from=${encodeURIComponent(from)}`} className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700">
           Sign Up
         </Link>
       </p>

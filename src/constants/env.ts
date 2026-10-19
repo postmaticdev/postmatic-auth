@@ -48,9 +48,10 @@ export const env = {
   AUTH_API_BASE_URL: serverOnly("AUTH_API_BASE_URL").replace(/\/+$/, ""),
   POSTMATIC_APP_URL: optional("POSTMATIC_APP_URL", "https://auth.postmatic.id"),
   LANDING_PAGE_URL: optional("NEXT_PUBLIC_LANDING_PAGE_URL", "https://postmatic.id"),
+  // Where users land after signing in when no (valid) `from` is given.
   POSTMATIC_DEFAULT_FROM_URL: optional(
     "POSTMATIC_DEFAULT_FROM_URL",
-    "https://dashboard.postmatic.id"
+    "https://workspace.postmatic.id"
   ),
   POSTMATIC_COOKIE_DOMAIN: optional("POSTMATIC_COOKIE_DOMAIN", ".postmatic.id"),
   POSTMATIC_COOKIE_SECURE: asBoolean(

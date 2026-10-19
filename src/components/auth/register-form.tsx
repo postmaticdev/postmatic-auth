@@ -214,7 +214,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Already have an account?{" "}
-        <Link href="/login" className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700">
+        <Link href={`/login?from=${encodeURIComponent(from)}`} className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700">
           Sign In
         </Link>
       </p>
