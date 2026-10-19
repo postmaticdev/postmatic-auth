@@ -1,5 +1,6 @@
 "use server"
 
+import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { env } from "@/constants"
@@ -16,6 +17,19 @@ const inviteMemberResponseMessageMap: Record<string, string> = {
   PROFILE_NOT_FOUND: "Profil akun tidak ditemukan.",
   MEMBER_ALREADY_ANSWERED: "Undangan ini sudah pernah dijawab.",
   TOKEN_EXPIRED: "Link undangan sudah kedaluwarsa.",
+  LOGIN_REQUIRED:
+    "Masuk dengan akun email yang diundang untuk menerima undangan ini.",
+  INVITATION_EMAIL_MISMATCH:
+    "Undangan ini untuk email lain. Masuk dengan akun email yang diundang.",
+}
+
+// Menerima undangan wajib login dengan akun yang diundang, jadi cookie sesi Postmatic
+// (dibagi ke *.postmatic.id) diteruskan ke API sebagai bearer token.
+const getSessionHeaders = async (): Promise<Record<string, string> | undefined> => {
+  const cookieStore = await cookies()
+  const accessToken = cookieStore.get(env.POSTMATIC_ACCESS_COOKIE_NAME)?.value
+
+  return accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
 }
 
 const getInviteMemberMessage = (responseMessage?: string): string => {
@@ -103,7 +117,14 @@ export const answerInviteMemberAction = async (
     body: {
       answer,
     },
+    headers: await getSessionHeaders(),
   })
+
+  if (payload?.responseMessage === "LOGIN_REQUIRED") {
+    // Setelah login, kembali ke halaman undangan ini untuk menerima ulang.
+    const inviteUrl = `${env.POSTMATIC_APP_URL.replace(/\/+$/, "")}/invite-member/${encodedToken}`
+    redirect(`/login?from=${encodeURIComponent(inviteUrl)}`)
+  }
 
   if (!ok || !payload?.data) {
     return {

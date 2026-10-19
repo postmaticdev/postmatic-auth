@@ -1,5 +1,6 @@
 "use server"
 
+import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { env } from "@/constants"
@@ -20,6 +21,23 @@ const socialPlatformResponseMessageMap: Record<string, string> = {
     "Akun platform yang dipilih tidak ditemukan atau tidak valid.",
   PLATFORM_SCOPES_NOT_FULFILLED:
     "Izin akses platform belum memenuhi kebutuhan integrasi.",
+  MISSING_TOKEN:
+    "Masuk ke akun Postmatic yang memulai koneksi ini, lalu buka ulang tautannya.",
+  INVALID_OR_EXPIRED_TOKEN:
+    "Sesi Anda telah berakhir. Masuk kembali, lalu mulai ulang koneksi dari workspace.",
+  CONNECTED_PLATFORM_OAUTH_INITIATOR_MISMATCH:
+    "Koneksi ini dimulai oleh akun Postmatic lain. Masuk dengan akun yang memulainya.",
+  CONNECTED_PLATFORM_OAUTH_CAPABILITY_INVALID:
+    "Anda tidak lagi memiliki akses untuk menghubungkan platform ke bisnis ini.",
+}
+
+// The API only lets the signed-in user who started the connection see or confirm it, so the
+// Postmatic session cookie (shared across *.postmatic.id) is forwarded as a bearer token.
+const getSessionHeaders = async (): Promise<Record<string, string> | undefined> => {
+  const cookieStore = await cookies()
+  const accessToken = cookieStore.get(env.POSTMATIC_ACCESS_COOKIE_NAME)?.value
+
+  return accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
 }
 
 const getSocialPlatformMessage = (responseMessage?: string): string => {
@@ -83,6 +101,7 @@ export const getSocialPlatformPendingStatus = async (
   }
 
   const paths = buildPendingPaths(token)
+  const headers = await getSessionHeaders()
 
   let lastResult: AuthRequestResult<SocialPlatformPendingPayload> | null = null
 
@@ -90,6 +109,7 @@ export const getSocialPlatformPendingStatus = async (
     const result = await callAuthApi<SocialPlatformPendingPayload>({
       method: "GET",
       path,
+      headers,
     })
     lastResult = result
 
@@ -141,6 +161,7 @@ export const connectSocialPlatformAction = async (
     body: {
       tempCodeAccount,
     },
+    headers: await getSessionHeaders(),
   })
 
   if (!ok || !payload?.data) {
