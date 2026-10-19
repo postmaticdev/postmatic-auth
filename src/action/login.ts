@@ -4,7 +4,11 @@ import { redirect } from "next/navigation"
 
 import { callAuthApi } from "./auth-client"
 import { setAuthCookies } from "./cookies"
-import { humanizeResponseMessage, sanitizeFromUrl } from "./helpers"
+import {
+  buildRedirectWithTokens,
+  humanizeResponseMessage,
+  sanitizeFromUrl,
+} from "./helpers"
 import { verifyTurnstileToken } from "./turnstile"
 import type { ActionState, AuthLoginPayload } from "./types"
 
@@ -83,5 +87,7 @@ export const loginAction = async (
     refreshToken: payload.data.refreshToken,
   })
 
-  redirect(from)
+  redirect(
+    buildRedirectWithTokens(from, payload.data.accessToken, payload.data.refreshToken)
+  )
 }

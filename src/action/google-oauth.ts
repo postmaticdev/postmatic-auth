@@ -7,7 +7,11 @@ import { env } from "@/constants"
 
 import { callAuthApi } from "./auth-client"
 import { setAuthCookies } from "./cookies"
-import { humanizeResponseMessage, sanitizeFromUrl } from "./helpers"
+import {
+  buildRedirectWithTokens,
+  humanizeResponseMessage,
+  sanitizeFromUrl,
+} from "./helpers"
 import type { ActionState } from "./types"
 
 type GoogleAuthUrlPayload = {
@@ -306,5 +310,7 @@ export const consumeGoogleLoginTempStateAction = async (
     refreshToken: resolved.refreshToken,
   })
 
-  redirect(resolved.from)
+  redirect(
+    buildRedirectWithTokens(resolved.from, resolved.accessToken, resolved.refreshToken)
+  )
 }
