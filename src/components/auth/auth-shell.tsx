@@ -10,6 +10,7 @@ import {
   Calendar,
 } from "lucide-react"
 
+import { legalLinks } from "@/lib/legal-links"
 import { cn } from "@/lib/utils"
 
 type AuthShellVariant =
@@ -244,11 +245,25 @@ export function AuthShell({
       {/* Right Form Panel */}
       <section
         className={cn(
-          "flex min-h-dvh flex-1 items-center justify-center bg-white px-5 py-10 sm:p-12 lg:p-16",
+          "flex min-h-dvh flex-1 flex-col bg-white px-5 py-10 sm:p-12 lg:p-16",
           formPanelClassName
         )}
       >
-        {children}
+        <div className="flex w-full flex-1 items-center justify-center">{children}</div>
+        {/* Dokumen legal: terlihat di semua ukuran layar, tepat di bawah form. */}
+        <nav aria-label="Legal" className="mt-10 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-gray-500">
+          {Object.values(legalLinks).map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-8 items-center transition-colors hover:text-gray-900"
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
       </section>
     </main>
   )

@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { legalLinks } from "@/lib/legal-links"
 import {
   NEW_PASSWORD_HINT,
   registerFormSchema,
@@ -194,13 +195,23 @@ export function RegisterForm({ from, initialEmail = "" }: RegisterFormProps) {
           className="text-sm font-medium leading-snug text-gray-600 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
         >
           I agree to the{" "}
-          <Link
-            href="https://docs.postmatic.id/privacy-policy/terms-and-condition"
+          <a
+            href={legalLinks.termsAndConditions.href}
             target="_blank"
+            rel="noopener noreferrer"
             className="text-blue-600 hover:text-blue-700 hover:underline"
           >
-            Privacy Policy and Terms & Conditions
-          </Link>
+            {legalLinks.termsAndConditions.label}
+          </a>{" "}
+          and{" "}
+          <a
+            href={legalLinks.privacyPolicy.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-700 hover:underline"
+          >
+            {legalLinks.privacyPolicy.label}
+          </a>
         </label>
       </div>
 

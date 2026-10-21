@@ -42,6 +42,10 @@ export const publicEnv = {
   // so Next.js can inline it at build/dev time.
   NEXT_PUBLIC_TURNSTILE_SITE_KEY:
     process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || "",
+  // Dokumen legal ada di landing page; tanpa prefix bahasa, landing memilih bahasa pengunjung.
+  NEXT_PUBLIC_LANDING_PAGE_URL: (
+    process.env.NEXT_PUBLIC_LANDING_PAGE_URL?.trim() || "https://postmatic.id"
+  ).replace(/\/+$/, ""),
 } as const
 
 export const env = {

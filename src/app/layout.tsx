@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 
 import { EnterToNextField } from "@/components/enter-to-next-field"
+import { HapticsListener } from "@/components/haptics-listener"
 
 export const metadata: Metadata = {
   title: "Postmatic Auth",
@@ -19,6 +20,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <EnterToNextField />
         {children}
+        <HapticsListener />
       </body>
     </html>
   )

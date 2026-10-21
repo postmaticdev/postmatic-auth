@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { haptic } from "@/lib/haptics"
 
 import type { ActionState } from "@/action"
 
@@ -46,6 +47,12 @@ function RetryCountdown({ retryAfter }: RetryCountdownProps) {
 }
 
 export function FormMessage({ state }: FormMessageProps) {
+  // Getaran halus setiap kali hasil server action baru masuk (sukses/gagal).
+  useEffect(() => {
+    if (state.status === "success") haptic("success")
+    else if (state.status === "error") haptic("error")
+  }, [state])
+
   if (state.status === "idle") {
     return null
   }

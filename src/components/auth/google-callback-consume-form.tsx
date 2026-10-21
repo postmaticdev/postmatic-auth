@@ -10,6 +10,7 @@ import {
 } from "@/action"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
+import { haptic } from "@/lib/haptics"
 
 type GoogleCallbackConsumeFormProps = {
   token: string
@@ -31,6 +32,10 @@ export function GoogleCallbackConsumeForm({
   }, [])
 
   const hasError = state.status === "error"
+
+  useEffect(() => {
+    if (hasError) haptic("error")
+  }, [hasError, state])
 
   return (
     <div className="space-y-4">
