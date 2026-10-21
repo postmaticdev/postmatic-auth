@@ -86,6 +86,12 @@ export const env = {
     ""
   ),
   TURNSTILE_SECRET_KEY: serverOnly("TURNSTILE_SECRET_KEY"),
+  // Shared with the API (same name there). When set, API calls carry it with
+  // the visitor's IP so the API rate-limits per visitor, not per auth server.
+  AUTH_TRUSTED_PROXY_SECRET: optional("AUTH_TRUSTED_PROXY_SECRET", ""),
+  // Request header holding the visitor's IP as set by the hosting edge (not
+  // the visitor): x-forwarded-for on Vercel, cf-connecting-ip behind Cloudflare.
+  AUTH_CLIENT_IP_HEADER: optional("AUTH_CLIENT_IP_HEADER", "x-forwarded-for").toLowerCase(),
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: publicEnv.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
 } as const
 

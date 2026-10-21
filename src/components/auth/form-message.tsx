@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
@@ -68,6 +69,13 @@ export function FormMessage({ state }: FormMessageProps) {
             <a href="/resend-verification" className="font-semibold underline hover:text-red-800">
               Resend verification email
             </a>
+          </span>
+        ) : null}
+        {state.code === "ACCOUNT_USES_GOOGLE_SIGN_IN" ? (
+          <span className="block mt-2">
+            <Link href="/forgot-password" className="font-semibold underline hover:text-red-800">
+              Set a password via Forgot password
+            </Link>
           </span>
         ) : null}
         {retryAfter > 0 ? (

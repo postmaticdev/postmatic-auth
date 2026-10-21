@@ -1,17 +1,31 @@
 import { env } from "@/constants"
 
-// Sama dengan newPasswordSchema di lib/validation/auth.ts.
-const NEW_PASSWORD_REGEX = /^[\x20-\x7E]{6,72}$/
+// Sama dengan newPasswordSchema di lib/validation/auth.ts dan validasi API
+// (min=8,max=72).
+const NEW_PASSWORD_REGEX = /^[\x20-\x7E]{8,72}$/
+
+export const NEW_PASSWORD_RULE_MESSAGE =
+  "Password harus 8-72 karakter dan hanya berisi huruf, angka, atau simbol standar."
 
 export const getNewPasswordError = (password: string): string | null => {
   if (password !== password.trim()) {
     return "Password tidak boleh diawali atau diakhiri spasi."
   }
   if (!NEW_PASSWORD_REGEX.test(password)) {
-    return "Password harus 6-72 karakter dan hanya berisi huruf, angka, atau simbol standar."
+    return NEW_PASSWORD_RULE_MESSAGE
   }
   return null
 }
+
+// true bila API menolak field ini (responseMessage VALIDATION_FAILED).
+export const hasValidationError = (
+  validationErrors: Record<string, string> | null | undefined,
+  field: string
+): boolean => Boolean(validationErrors?.[field])
+
+// URL absolut halaman di situs auth ini, untuk `from` saat diarahkan ke login.
+export const buildAuthPageUrl = (path: string): string =>
+  `${env.POSTMATIC_APP_URL.replace(/\/+$/, "")}${path}`
 
 const LOCAL_DEV_HOSTNAMES = new Set(["localhost", "127.0.0.1"])
 
@@ -61,6 +75,10 @@ export const humanizeResponseMessage = (value?: string): string => {
 
   if (value === "SERVICE_UNAVAILABLE") {
     return "Server sedang tidak dapat dihubungi. Coba lagi beberapa saat."
+  }
+
+  if (value === "TOO_MANY_REQUESTS") {
+    return "Terlalu banyak percobaan. Tunggu sebentar sebelum mencoba lagi."
   }
 
   return value

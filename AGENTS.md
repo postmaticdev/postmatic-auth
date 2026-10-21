@@ -7,7 +7,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ## Postmatic Auth Frontend Knowledge
 
 ### Stack and Core Rules
-- Next.js `16.2.6` App Router.
+- Next.js `16.3.8` App Router.
 - `params`, `searchParams`, and `cookies()` are async in this codebase style.
 - Keep auth mutations in Server Actions under `src/action/*`.
 - Use shadcn UI components for forms and cards.

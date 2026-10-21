@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   forgotPasswordResetSchema,
+  NEW_PASSWORD_HINT,
   type ForgotPasswordResetValues,
 } from "@/lib/validation/auth"
 
@@ -155,6 +156,9 @@ export function ForgotPasswordResetForm({
             </button>
           </div>
           <FieldError className="mt-1.5" errors={[form.formState.errors.newPassword]} />
+          <p className="mt-1.5 text-xs text-gray-500">
+            {NEW_PASSWORD_HINT}
+          </p>
         </div>
 
         <div>

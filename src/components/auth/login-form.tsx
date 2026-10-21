@@ -43,6 +43,8 @@ function GoogleIcon() {
   )
 }
 
+const GOOGLE_LOGIN_FORM_ID = "google-login-form"
+
 type LoginFormProps = {
   from: string
   initialEmail?: string
@@ -104,7 +106,7 @@ export function LoginForm({
         </Alert>
       ) : null}
 
-      <form action={googleAction} className="space-y-2">
+      <form id={GOOGLE_LOGIN_FORM_ID} action={googleAction} className="space-y-2">
         <input type="hidden" name="from" value={from} readOnly />
         <button
           type="submit"
@@ -194,6 +196,21 @@ export function LoginForm({
         </div>
 
         <FormMessage state={state} />
+
+        {state.code === "ACCOUNT_USES_GOOGLE_SIGN_IN" ? (
+          // Mengirim form Google di atas (form bertingkat tidak diizinkan).
+          <button
+            type="submit"
+            form={GOOGLE_LOGIN_FORM_ID}
+            disabled={googlePending}
+            className="w-full rounded-xl border border-gray-200 bg-white px-4 h-11 sm:h-10 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            <span className="flex items-center justify-center gap-3">
+              <GoogleIcon />
+              {googlePending ? "Preparing Google login..." : "Continue with Google"}
+            </span>
+          </button>
+        ) : null}
 
         <Button
           type="submit"

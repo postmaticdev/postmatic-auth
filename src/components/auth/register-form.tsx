@@ -15,15 +15,17 @@ import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
+  NEW_PASSWORD_HINT,
   registerFormSchema,
   type RegisterFormValues,
 } from "@/lib/validation/auth"
 
 type RegisterFormProps = {
   from: string
+  initialEmail?: string
 }
 
-export function RegisterForm({ from }: RegisterFormProps) {
+export function RegisterForm({ from, initialEmail = "" }: RegisterFormProps) {
   const [turnstileAccepted, setTurnstileAccepted] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -37,7 +39,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
       name: "",
-      email: "",
+      email: initialEmail,
       password: "",
       confirmPassword: "",
     },
@@ -130,7 +132,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
         </div>
         <FieldError className="mt-1.5" errors={[form.formState.errors.password]} />
         <p className="mt-1.5 text-xs text-gray-500">
-          Password must be at least 6 characters.
+          {NEW_PASSWORD_HINT}
         </p>
       </div>
 
@@ -203,6 +205,14 @@ export function RegisterForm({ from }: RegisterFormProps) {
       </div>
 
       <FormMessage state={state} />
+
+      {state.code === "ACCOUNT_USES_GOOGLE_SIGN_IN" ? (
+        <Button type="button" variant="outline" asChild className="h-11 sm:h-10 w-full rounded-xl text-sm font-medium">
+          <Link href={`/login?from=${encodeURIComponent(from)}`}>
+            Sign in with Google instead
+          </Link>
+        </Button>
+      ) : null}
 
       <Button
         type="submit"

@@ -1,24 +1,30 @@
 import { z } from "zod"
 
-const asciiPasswordRegex = /^[\x20-\x7E]{6,}$/
+const asciiPasswordRegex = /^[\x20-\x7E]+$/
+
+export const NEW_PASSWORD_MIN_LENGTH = 8
+export const NEW_PASSWORD_HINT =
+  "Use 8-72 characters: letters, numbers, or standard symbols, with no leading or trailing spaces."
 
 // Aturan password baru (register & reset) - sama dengan validasi di server
-// action: ASCII printable, 6-72 karakter (batas bcrypt), tanpa spasi di awal
-// atau akhir.
+// action dan API: ASCII printable, 8-72 karakter (batas bcrypt), tanpa spasi
+// di awal atau akhir.
 const newPasswordSchema = z
   .string()
-  .min(6, "Password must be at least 6 characters.")
+  .min(NEW_PASSWORD_MIN_LENGTH, "Password must be at least 8 characters.")
   .max(72, "Password must be at most 72 characters.")
   .regex(asciiPasswordRegex, "Password contains invalid characters.")
   .refine((value) => value === value.trim(), {
     message: "Password cannot start or end with a space.",
   })
 
+// Login tidak memakai batas minimal password baru: akun lama boleh punya
+// password yang lebih pendek dari 8 karakter.
 export const loginFormSchema = z.object({
   email: z.string().email("Invalid email format."),
   password: z
     .string()
-    .min(6, "Password must be at least 6 characters.")
+    .min(1, "Password is required.")
     .regex(
       asciiPasswordRegex,
       "Password contains invalid characters."

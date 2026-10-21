@@ -16,6 +16,7 @@ export { loginAction } from "./login"
 export { registerAction } from "./register"
 export {
   connectSocialPlatformAction,
+  getSocialPlatformCallbackFailureStatus,
   getSocialPlatformPendingStatus,
 } from "./social-platform"
 export {

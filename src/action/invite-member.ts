@@ -6,7 +6,7 @@ import { redirect } from "next/navigation"
 import { env } from "@/constants"
 
 import { callAuthApi } from "./auth-client"
-import { humanizeResponseMessage } from "./helpers"
+import { buildAuthPageUrl, humanizeResponseMessage } from "./helpers"
 import type { ActionState, BusinessMemberInvitationPayload } from "./types"
 
 const inviteMemberResponseMessageMap: Record<string, string> = {
@@ -92,6 +92,8 @@ export const answerInviteMemberAction = async (
 ): Promise<ActionState> => {
   const token = String(formData.get("token") ?? "").trim()
   const answer = String(formData.get("answer") ?? "").trim().toLowerCase()
+  // Hanya untuk mengisi otomatis email di halaman login.
+  const invitedEmail = String(formData.get("invitedEmail") ?? "").trim()
 
   if (!token) {
     return {
@@ -122,8 +124,9 @@ export const answerInviteMemberAction = async (
 
   if (payload?.responseMessage === "LOGIN_REQUIRED") {
     // Setelah login, kembali ke halaman undangan ini untuk menerima ulang.
-    const inviteUrl = `${env.POSTMATIC_APP_URL.replace(/\/+$/, "")}/invite-member/${encodedToken}`
-    redirect(`/login?from=${encodeURIComponent(inviteUrl)}`)
+    const inviteUrl = buildAuthPageUrl(`/invite-member/${encodedToken}`)
+    const emailQuery = invitedEmail ? `&email=${encodeURIComponent(invitedEmail)}` : ""
+    redirect(`/login?from=${encodeURIComponent(inviteUrl)}${emailQuery}`)
   }
 
   if (!ok || !payload?.data) {

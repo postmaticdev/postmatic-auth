@@ -19,7 +19,13 @@ import type { InviteMemberVerifyResult } from "@/action/invite-member"
 type InviteMemberFormProps = {
   token: string
   status: InviteMemberVerifyResult
+  // URL halaman ini, dipakai sebagai `from` agar kembali ke sini setelah login.
+  inviteUrl: string
+  // Email sesi saat ini (hanya untuk tampilan); null bila belum login.
+  signedInEmail: string | null
 }
+
+const normalizeEmail = (value: string): string => value.trim().toLowerCase()
 
 const formatDateTime = (value?: string): string => {
   if (!value) {
@@ -56,7 +62,12 @@ const getSafeLogoUrl = (value?: string | null): string | null => {
   }
 }
 
-export function InviteMemberForm({ token, status }: InviteMemberFormProps) {
+export function InviteMemberForm({
+  token,
+  status,
+  inviteUrl,
+  signedInEmail,
+}: InviteMemberFormProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<"accept" | "reject" | null>(
     null
   )
@@ -90,6 +101,14 @@ export function InviteMemberForm({ token, status }: InviteMemberFormProps) {
       </div>
     )
   }
+
+  // Menerima undangan wajib login dengan email yang diundang (dicek di API).
+  const authQuery = `from=${encodeURIComponent(inviteUrl)}&email=${encodeURIComponent(invitation.profileEmail)}`
+  const loginHref = `/login?${authQuery}`
+  const registerHref = `/register?${authQuery}`
+  const signedInWithOtherEmail =
+    Boolean(signedInEmail) &&
+    normalizeEmail(signedInEmail ?? "") !== normalizeEmail(invitation.profileEmail)
 
   return (
     <div className="space-y-4">
@@ -151,6 +170,43 @@ export function InviteMemberForm({ token, status }: InviteMemberFormProps) {
         </div>
       </div>
 
+      {!invitation.alreadyMember && !signedInEmail ? (
+        <>
+          <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+            <AlertTitle>Masuk untuk menerima undangan</AlertTitle>
+            <AlertDescription>
+              Undangan ini untuk {invitation.profileEmail}. Masuk dengan akun email tersebut, atau
+              daftar bila belum punya akun. Setelah itu Anda kembali ke halaman ini.
+            </AlertDescription>
+          </Alert>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Button asChild variant="outline" className="h-11 sm:h-10 text-sm font-semibold">
+              <Link href={registerHref}>Daftar</Link>
+            </Button>
+            <Button
+              asChild
+              className="order-first h-11 sm:order-none sm:h-10 bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              <Link href={loginHref}>Masuk</Link>
+            </Button>
+          </div>
+        </>
+      ) : null}
+
+      {!invitation.alreadyMember && signedInWithOtherEmail ? (
+        <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+          <AlertTitle>Anda masuk dengan email lain</AlertTitle>
+          <AlertDescription>
+            Anda masuk sebagai {signedInEmail}, sedangkan undangan ini untuk{" "}
+            {invitation.profileEmail}. Masuk dengan akun yang diundang untuk menerima undangan.{" "}
+            <Link href={loginHref} className="font-semibold">
+              Masuk dengan akun yang diundang
+            </Link>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
       {invitation.alreadyMember ? (
         <Alert className="border-green-200 bg-green-50 text-green-800">
           <AlertTitle>Anda sudah menjadi member</AlertTitle>
@@ -161,6 +217,7 @@ export function InviteMemberForm({ token, status }: InviteMemberFormProps) {
       ) : (
         <form action={answerAction} className="space-y-3">
           <input type="hidden" name="token" value={token} readOnly />
+          <input type="hidden" name="invitedEmail" value={invitation.profileEmail} readOnly />
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Button
@@ -198,6 +255,17 @@ export function InviteMemberForm({ token, status }: InviteMemberFormProps) {
       )}
 
       <FormMessage state={answerState} />
+
+      {answerState.code === "INVITATION_EMAIL_MISMATCH" ? (
+        <p className="text-center text-sm text-gray-500">
+          <Link
+            href={loginHref}
+            className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700"
+          >
+            Masuk dengan {invitation.profileEmail}
+          </Link>
+        </p>
+      ) : null}
     </div>
   )
 }

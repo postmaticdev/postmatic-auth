@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Building2, Globe, Mail, ShieldCheck, UserRound } from "lucide-react"
 
 import {
@@ -23,7 +24,30 @@ import type { SocialPlatformAccountPayload } from "@/action/types"
 type SocialPlatformFormProps = {
   from: string
   status: SocialPlatformPendingStatusResult
+  // Login lalu kembali ke halaman konfirmasi ini.
+  loginUrl: string
 }
+
+// Perlu login (ulang) sebagai akun Postmatic yang memulai koneksi.
+const SIGN_IN_REQUIRED_CODES = new Set([
+  "MISSING_TOKEN",
+  "MISSING_AUTH_CONTEXT",
+  "INVALID_OR_EXPIRED_TOKEN",
+  "CONNECTED_PLATFORM_OAUTH_INITIATOR_MISMATCH",
+])
+
+// Kode koneksi sudah dipakai/kedaluwarsa: harus mulai ulang dari workspace.
+const RESTART_REQUIRED_CODES = new Set([
+  "CONNECTED_PLATFORM_TEMP_CODE_NOT_FOUND",
+  "CONNECTED_PLATFORM_TEMP_CODE_ACCOUNT_NOT_FOUND",
+  "CONNECTED_PLATFORM_STATE_ALREADY_USED",
+  "CONNECTED_PLATFORM_AUTHORIZATION_CANCELLED",
+])
+
+const getSignInLabel = (code?: string): string =>
+  code === "CONNECTED_PLATFORM_OAUTH_INITIATOR_MISMATCH"
+    ? "Masuk dengan akun lain"
+    : "Masuk untuk melanjutkan"
 
 const toTitleCase = (value: string): string =>
   value
@@ -71,7 +95,8 @@ const renderAccountAvatar = (account: SocialPlatformAccountPayload) => {
   )
 }
 
-export function SocialPlatformForm({ from, status }: SocialPlatformFormProps) {
+export function SocialPlatformForm({ from, status, loginUrl }: SocialPlatformFormProps) {
+  const router = useRouter()
   const pendingData = status.data
   const accounts = pendingData?.accounts ?? []
   const defaultSelectedAccount =
@@ -96,14 +121,48 @@ export function SocialPlatformForm({ from, status }: SocialPlatformFormProps) {
           <AlertDescription>{status.message}</AlertDescription>
         </Alert>
 
-        <p className="text-center text-sm text-gray-500">
-          <Link
-            href={from}
-            className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700"
+        {status.code && SIGN_IN_REQUIRED_CODES.has(status.code) ? (
+          <Button
+            asChild
+            className="h-11 sm:h-10 w-full bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700"
           >
-            Kembali ke halaman sebelumnya
-          </Link>
-        </p>
+            <Link href={loginUrl}>{getSignInLabel(status.code)}</Link>
+          </Button>
+        ) : null}
+
+        {status.code && RESTART_REQUIRED_CODES.has(status.code) ? (
+          <Button
+            asChild
+            className="h-11 sm:h-10 w-full bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700"
+          >
+            <Link href={from}>Mulai ulang dari workspace</Link>
+          </Button>
+        ) : null}
+
+        {!status.code ||
+        (!SIGN_IN_REQUIRED_CODES.has(status.code) && !RESTART_REQUIRED_CODES.has(status.code)) ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              router.refresh()
+            }}
+            className="h-11 sm:h-10 w-full text-sm font-semibold"
+          >
+            Coba lagi
+          </Button>
+        ) : null}
+
+        {status.code && RESTART_REQUIRED_CODES.has(status.code) ? null : (
+          <p className="text-center text-sm text-gray-500">
+            <Link
+              href={from}
+              className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700"
+            >
+              Kembali ke halaman sebelumnya
+            </Link>
+          </p>
+        )}
       </div>
     )
   }
@@ -251,6 +310,28 @@ export function SocialPlatformForm({ from, status }: SocialPlatformFormProps) {
         </div>
 
         <FormMessage state={submitState} />
+
+        {submitState.code && SIGN_IN_REQUIRED_CODES.has(submitState.code) ? (
+          <p className="text-center text-sm text-gray-500">
+            <Link
+              href={loginUrl}
+              className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700"
+            >
+              {getSignInLabel(submitState.code)}
+            </Link>
+          </p>
+        ) : null}
+
+        {submitState.code && RESTART_REQUIRED_CODES.has(submitState.code) ? (
+          <p className="text-center text-sm text-gray-500">
+            <Link
+              href={from}
+              className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700"
+            >
+              Mulai ulang dari workspace
+            </Link>
+          </p>
+        ) : null}
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Button

@@ -3,10 +3,16 @@
 import { redirect } from "next/navigation"
 
 import { callAuthApi } from "./auth-client"
-import { getNewPasswordError, humanizeResponseMessage } from "./helpers"
+import {
+  getNewPasswordError,
+  hasValidationError,
+  humanizeResponseMessage,
+  NEW_PASSWORD_RULE_MESSAGE,
+} from "./helpers"
 import { verifyTurnstileToken } from "./turnstile"
 import type {
   ActionState,
+  AuthApiEnvelope,
   ForgotPasswordRequestPayload,
   ForgotPasswordResetPayload,
   ForgotPasswordStatusPayload,
@@ -28,6 +34,7 @@ const forgotPasswordResponseMessageMap: Record<string, string> = {
   PLEASE_WAIT: "Email reset baru saja dikirim. Tunggu sebelum mengirim ulang.",
   INVALID_FORGOT_PASSWORD_TOKEN:
     "Link reset password tidak valid atau sudah kedaluwarsa.",
+  TOO_MANY_REQUESTS: "Terlalu banyak percobaan. Tunggu sebentar sebelum mencoba lagi.",
 }
 
 const getForgotPasswordMessage = (responseMessage?: string): string => {
@@ -39,6 +46,19 @@ const getForgotPasswordMessage = (responseMessage?: string): string => {
     forgotPasswordResponseMessageMap[responseMessage] ??
     humanizeResponseMessage(responseMessage)
   )
+}
+
+const getResetPasswordErrorMessage = (
+  payload: AuthApiEnvelope<ForgotPasswordResetPayload> | null
+): string => {
+  if (
+    payload?.responseMessage === "VALIDATION_FAILED" &&
+    hasValidationError(payload.validationErrors, "newPassword")
+  ) {
+    return NEW_PASSWORD_RULE_MESSAGE
+  }
+
+  return getForgotPasswordMessage(payload?.responseMessage)
 }
 
 const extractRetryAfter = (
@@ -118,7 +138,7 @@ export const requestForgotPasswordAction = async (
     }
   }
 
-  const { ok, payload } = await callAuthApi<ForgotPasswordRequestPayload>({
+  const { ok, payload, retryAfter } = await callAuthApi<ForgotPasswordRequestPayload>({
     method: "POST",
     path: "/api/account/auth/forgot-password",
     body: {
@@ -131,7 +151,7 @@ export const requestForgotPasswordAction = async (
       status: "error",
       code: payload?.responseMessage,
       message: getForgotPasswordMessage(payload?.responseMessage),
-      retryAfter: extractRetryAfter(payload?.data ?? null),
+      retryAfter: extractRetryAfter(payload?.data ?? null) ?? retryAfter,
     }
   }
 
@@ -189,7 +209,7 @@ export const submitForgotPasswordResetAction = async (
   }
 
   const encodedToken = encodeURIComponent(token)
-  const { ok, payload } = await callAuthApi<ForgotPasswordResetPayload>({
+  const { ok, payload, retryAfter } = await callAuthApi<ForgotPasswordResetPayload>({
     method: "POST",
     path: `/api/account/auth/forgot-password/${encodedToken}`,
     body: {
@@ -201,8 +221,8 @@ export const submitForgotPasswordResetAction = async (
     return {
       status: "error",
       code: payload?.responseMessage,
-      message: getForgotPasswordMessage(payload?.responseMessage),
-      retryAfter: extractRetryAfter(payload?.data ?? null),
+      message: getResetPasswordErrorMessage(payload),
+      retryAfter: extractRetryAfter(payload?.data ?? null) ?? retryAfter,
     }
   }
 

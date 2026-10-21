@@ -25,6 +25,33 @@ const getMaxAgeFromJwt = (token: string): number | undefined => {
   }
 }
 
+// Email akun yang sedang login, dibaca dari payload access token TANPA
+// verifikasi tanda tangan. Hanya untuk tampilan (mis. peringatan email beda di
+// halaman undangan); keputusan otorisasi tetap di API.
+export const getSessionEmail = async (): Promise<string | null> => {
+  const cookieStore = await cookies()
+  const accessToken = cookieStore.get(env.POSTMATIC_ACCESS_COOKIE_NAME)?.value
+  const chunks = accessToken?.split(".") ?? []
+
+  if (chunks.length !== 3) {
+    return null
+  }
+
+  try {
+    const payload = JSON.parse(
+      Buffer.from(chunks[1], "base64url").toString("utf8")
+    ) as { email?: unknown; exp?: unknown }
+
+    if (typeof payload.exp === "number" && payload.exp * 1000 <= Date.now()) {
+      return null
+    }
+
+    return typeof payload.email === "string" && payload.email ? payload.email : null
+  } catch {
+    return null
+  }
+}
+
 type TokenPair = {
   accessToken: string
   refreshToken: string

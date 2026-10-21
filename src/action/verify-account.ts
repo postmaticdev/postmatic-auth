@@ -16,12 +16,15 @@ import type {
 } from "./types"
 
 const verifyResponseMessageMap: Record<string, string> = {
-  INVALID_CREATE_ACCOUNT_TOKEN: "Link verifikasi tidak valid atau sudah kedaluwarsa.",
+  // API juga menolak link verifikasi lama untuk akun yang sudah masuk dengan Google.
+  INVALID_CREATE_ACCOUNT_TOKEN:
+    "Link verifikasi tidak valid atau sudah kedaluwarsa. Jika akun ini terhubung dengan Google, masuk dengan Google atau atur password lewat Lupa password.",
   USER_ALREADY_VERIFIED: "Akun ini sudah terverifikasi. Silakan login.",
   CHECK_VERIFY_TOKEN_SUCCESS: "Link verifikasi valid.",
   SUBMIT_VERIFY_TOKEN_SUCCESS: "Akun berhasil diverifikasi.",
   USER_NOT_FOUND: "Akun tidak ditemukan.",
   PLEASE_WAIT: "Email verifikasi baru saja dikirim. Tunggu sebelum kirim ulang lagi.",
+  TOO_MANY_REQUESTS: "Terlalu banyak percobaan. Tunggu sebentar sebelum mencoba lagi.",
 }
 
 const extractEmailFromJwt = (token: string): string | undefined => {
@@ -141,7 +144,7 @@ export const verifyAccountAction = async (
     }
   }
 
-  const { ok, payload } = await callAuthApi<AuthVerifyPayload>({
+  const { ok, payload, retryAfter } = await callAuthApi<AuthVerifyPayload>({
     method: "POST",
     path: `/api/account/auth/verify/${encodeURIComponent(token)}?from=${encodeURIComponent(from)}`,
   })
@@ -151,7 +154,7 @@ export const verifyAccountAction = async (
       status: "error",
       message: getVerifyMessage(payload?.responseMessage),
       code: payload?.responseMessage,
-      retryAfter: getRetryAfter(payload?.data),
+      retryAfter: getRetryAfter(payload?.data) ?? retryAfter,
     }
   }
 
@@ -187,7 +190,7 @@ export const resendVerificationEmailAction = async (
     }
   }
 
-  const { ok, payload } = await callAuthApi<AuthRegisterPayload>({
+  const { ok, payload, retryAfter } = await callAuthApi<AuthRegisterPayload>({
     method: "POST",
     path: "/api/account/auth/resend-email-verification",
     body: {
@@ -203,7 +206,7 @@ export const resendVerificationEmailAction = async (
       status: "error",
       message: getVerifyMessage(payload?.responseMessage),
       code: payload?.responseMessage,
-      retryAfter: getRetryAfter(payload?.data),
+      retryAfter: getRetryAfter(payload?.data) ?? retryAfter,
     }
   }
 

@@ -20,6 +20,8 @@ export type AuthApiEnvelope<TData> = {
   }
   responseMessage?: string
   data?: TData | null
+  // Diisi API bila responseMessage VALIDATION_FAILED: { namaField: pesan }.
+  validationErrors?: Record<string, string> | null
 }
 
 export type AuthUser = {

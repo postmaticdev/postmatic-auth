@@ -18,6 +18,9 @@ const loginResponseMessageMap: Record<string, string> = {
   EMAIL_NOT_FOUND: "Invalid Credentials. Please check your email and password.",
   EMAIL_NOT_VERIFIED: "Email not verified. Please check your inbox or resend the verification email.",
   PLEASE_WAIT: "A verification email was just sent. Please wait before requesting another.",
+  ACCOUNT_USES_GOOGLE_SIGN_IN:
+    "This account signs in with Google. Continue with Google, or set a password via Forgot password.",
+  TOO_MANY_REQUESTS: "Too many sign-in attempts. Please wait before trying again.",
 }
 
 const extractRetryAfter = (payload: AuthLoginPayload | null | undefined): number | undefined => {
@@ -63,7 +66,7 @@ export const loginAction = async (
     }
   }
 
-  const { ok, payload } = await callAuthApi<AuthLoginPayload>({
+  const { ok, payload, retryAfter } = await callAuthApi<AuthLoginPayload>({
     method: "POST",
     path: "/api/account/auth/login",
     body: {
@@ -78,7 +81,7 @@ export const loginAction = async (
       status: "error",
       message: getLoginErrorMessage(payload?.responseMessage),
       code: payload?.responseMessage,
-      retryAfter: extractRetryAfter(payload?.data ?? null),
+      retryAfter: extractRetryAfter(payload?.data ?? null) ?? retryAfter,
     }
   }
 

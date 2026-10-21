@@ -1,6 +1,8 @@
 import Image from "next/image"
 
 import { getInviteMemberStatus } from "@/action"
+import { getSessionEmail } from "@/action/cookies"
+import { buildAuthPageUrl } from "@/action/helpers"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { InviteMemberForm } from "@/components/auth/invite-member-form"
 
@@ -17,6 +19,9 @@ export default async function InviteMemberPage({ params }: InviteMemberPageProps
   const token = routeParams.token
 
   const status = await getInviteMemberStatus(token)
+  const signedInEmail = await getSessionEmail()
+  // Tujuan kembali setelah login/daftar, agar user bisa langsung menerima undangan.
+  const inviteUrl = buildAuthPageUrl(`/invite-member/${encodeURIComponent(token)}`)
 
   return (
     <AuthShell variant="invite-member">
@@ -38,7 +43,12 @@ export default async function InviteMemberPage({ params }: InviteMemberPageProps
           </p>
         </div>
 
-        <InviteMemberForm token={token} status={status} />
+        <InviteMemberForm
+          token={token}
+          status={status}
+          inviteUrl={inviteUrl}
+          signedInEmail={signedInEmail}
+        />
       </div>
     </AuthShell>
   )

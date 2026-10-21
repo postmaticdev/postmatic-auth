@@ -10,7 +10,7 @@ export const metadata = {
 }
 
 type RegisterPageProps = {
-  searchParams: Promise<{ from?: string | string[] }>
+  searchParams: Promise<{ from?: string | string[]; email?: string | string[] }>
 }
 
 export default async function RegisterPage({ searchParams }: RegisterPageProps) {
@@ -39,7 +39,10 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
           </p>
         </div>
 
-        <RegisterForm from={from} />
+        <RegisterForm
+          from={from}
+          initialEmail={typeof query.email === "string" ? query.email : ""}
+        />
       </div>
     </AuthShell>
   )
