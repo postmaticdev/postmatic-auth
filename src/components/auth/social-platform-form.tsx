@@ -72,24 +72,29 @@ const getSafeUrl = (value?: string | null): string | null => {
   }
 }
 
-const renderAccountAvatar = (account: SocialPlatformAccountPayload) => {
+// Avatar URL dari provider (LinkedIn, Facebook CDN) bisa kedaluwarsa; tampilkan
+// ikon default bila gambar gagal dimuat.
+function AccountAvatar({ account }: { account: SocialPlatformAccountPayload }) {
   const iconUrl = getSafeUrl(account.platformIconUrl)
+  const [failedUrl, setFailedUrl] = useState<string | null>(null)
 
-  if (!iconUrl) {
+  if (!iconUrl || failedUrl === iconUrl) {
     return (
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-gray-50">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50">
         <UserRound className="h-5 w-5 text-gray-400" />
       </div>
     )
   }
 
   return (
-    <div className="h-10 w-10 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-      <div
-        className="h-full w-full bg-cover bg-center"
-        role="img"
-        aria-label={`Avatar ${account.platformUserName}`}
-        style={{ backgroundImage: `url('${iconUrl}')` }}
+    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={iconUrl}
+        alt={`Avatar ${account.platformUserName}`}
+        referrerPolicy="no-referrer"
+        className="h-full w-full object-cover"
+        onError={() => setFailedUrl(iconUrl)}
       />
     </div>
   )
@@ -274,10 +279,10 @@ export function SocialPlatformForm({ from, status, loginUrl }: SocialPlatformFor
                   <RadioGroupItem
                     id={account.tempCodeAccount}
                     value={account.tempCodeAccount}
-                    className="mt-0.5 size-5"
+                    className="mt-0.5 size-5 border-gray-300 bg-white focus-visible:border-blue-600 focus-visible:ring-blue-600/30 data-checked:border-blue-600 data-checked:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white"
                   />
 
-                  {renderAccountAvatar(account)}
+                  <AccountAvatar account={account} />
 
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-gray-900">
