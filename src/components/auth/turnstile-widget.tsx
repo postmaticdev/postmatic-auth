@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { preload } from "react-dom"
 
 import { publicEnv } from "@/constants"
 
@@ -32,6 +33,8 @@ type TurnstileWidgetProps = {
 }
 
 const TURNSTILE_SCRIPT_ID = "postmatic-turnstile-script"
+const TURNSTILE_SCRIPT_SRC =
+  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
 
 export function TurnstileWidget({
   inputName = "turnstileToken",
@@ -45,6 +48,14 @@ export function TurnstileWidget({
   const [widgetError, setWidgetError] = useState<string>("")
   const siteKey = publicEnv.NEXT_PUBLIC_TURNSTILE_SITE_KEY
   const missingSiteKey = !siteKey
+
+  // Saat SSR, React memasang <link rel="preload"> di <head> sehingga script
+  // Turnstile mulai diunduh paralel dengan bundle aplikasi, bukan menunggu
+  // hidrasi selesai. Script tag di bawah tetap disisipkan seperti biasa dan
+  // memakai hasil unduhan dari cache.
+  if (!missingSiteKey) {
+    preload(TURNSTILE_SCRIPT_SRC, { as: "script" })
+  }
 
   // Parent biasanya mengirim callback inline (fungsi baru tiap render). Simpan
   // di ref agar widget tidak di-render ulang dan token tidak ter-reset setiap
@@ -63,7 +74,6 @@ export function TurnstileWidget({
     }
 
     let cancelled = false
-    const parentForm = containerRef.current?.closest("form")
 
     const renderWidget = () => {
       if (cancelled || !containerRef.current || !window.turnstile || widgetIdRef.current) {
@@ -117,7 +127,7 @@ export function TurnstileWidget({
 
       const script = document.createElement("script")
       script.id = TURNSTILE_SCRIPT_ID
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+      script.src = TURNSTILE_SCRIPT_SRC
       script.async = true
       script.defer = true
       script.addEventListener("load", renderWidget)

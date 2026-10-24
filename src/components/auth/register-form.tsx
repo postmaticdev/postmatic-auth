@@ -1,10 +1,10 @@
 "use client"
 
-import { startTransition, useActionState, useMemo, useState } from "react"
+import { startTransition, useActionState, useState } from "react"
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Eye, EyeOff, Lock, Mail, User } from "lucide-react"
-import { useForm, useWatch } from "react-hook-form"
+import { useForm } from "react-hook-form"
 
 import { initialActionState, registerAction } from "@/action"
 import { FormMessage } from "@/components/auth/form-message"
@@ -45,12 +45,6 @@ export function RegisterForm({ from, initialEmail = "" }: RegisterFormProps) {
       confirmPassword: "",
     },
   })
-
-  const password = useWatch({ control: form.control, name: "password" }) ?? ""
-  const confirmPassword = useWatch({
-    control: form.control,
-    name: "confirmPassword",
-  }) ?? ""
 
   const submitRegister = form.handleSubmit((_values, event) => {
     const formElement = event?.target as HTMLFormElement | undefined
@@ -194,7 +188,7 @@ export function RegisterForm({ from, initialEmail = "" }: RegisterFormProps) {
           htmlFor="terms"
           className="text-sm font-medium leading-snug text-gray-600 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
         >
-          I agree to the{" "}
+          I have read and agree to the{" "}
           <a
             href={legalLinks.termsAndConditions.href}
             target="_blank"
@@ -203,7 +197,7 @@ export function RegisterForm({ from, initialEmail = "" }: RegisterFormProps) {
           >
             {legalLinks.termsAndConditions.label}
           </a>{" "}
-          and{" "}
+          and the{" "}
           <a
             href={legalLinks.privacyPolicy.href}
             target="_blank"
