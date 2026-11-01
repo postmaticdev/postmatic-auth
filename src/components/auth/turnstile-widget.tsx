@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { preload } from "react-dom"
 
 import { publicEnv } from "@/constants"
 
@@ -23,16 +24,22 @@ declare global {
   }
 }
 
+import type { ActionState } from "@/action/types"
+
 type TurnstileWidgetProps = {
   inputName?: string
   onTokenStateChange?: (hasToken: boolean) => void
+  actionState?: ActionState
 }
 
 const TURNSTILE_SCRIPT_ID = "postmatic-turnstile-script"
+const TURNSTILE_SCRIPT_SRC =
+  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
 
 export function TurnstileWidget({
   inputName = "turnstileToken",
   onTokenStateChange,
+  actionState,
 }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const widgetIdRef = useRef<string | null>(null)
@@ -42,33 +49,31 @@ export function TurnstileWidget({
   const siteKey = publicEnv.NEXT_PUBLIC_TURNSTILE_SITE_KEY
   const missingSiteKey = !siteKey
 
+  // Saat SSR, React memasang <link rel="preload"> di <head> sehingga script
+  // Turnstile mulai diunduh paralel dengan bundle aplikasi, bukan menunggu
+  // hidrasi selesai. Script tag di bawah tetap disisipkan seperti biasa dan
+  // memakai hasil unduhan dari cache.
+  if (!missingSiteKey) {
+    preload(TURNSTILE_SCRIPT_SRC, { as: "script" })
+  }
+
+  // Parent biasanya mengirim callback inline (fungsi baru tiap render). Simpan
+  // di ref agar widget tidak di-render ulang dan token tidak ter-reset setiap
+  // kali parent re-render.
+  const onTokenStateChangeRef = useRef(onTokenStateChange)
+  useEffect(() => {
+    onTokenStateChangeRef.current = onTokenStateChange
+  }, [onTokenStateChange])
+  const notifyTokenState = (hasToken: boolean) => {
+    onTokenStateChangeRef.current?.(hasToken)
+  }
+
   useEffect(() => {
     if (missingSiteKey) {
       return
     }
 
     let cancelled = false
-    const parentForm = containerRef.current?.closest("form")
-
-    const handleFormSubmit = () => {
-      if (!widgetIdRef.current || !window.turnstile) {
-        return
-      }
-
-      // Reset after submit so request still receives the current token.
-      setTimeout(() => {
-        if (!widgetIdRef.current || !window.turnstile) {
-          return
-        }
-
-        window.turnstile.reset(widgetIdRef.current)
-        setToken("")
-        setWidgetReady(false)
-        onTokenStateChange?.(false)
-      }, 0)
-    }
-
-    parentForm?.addEventListener("submit", handleFormSubmit)
 
     const renderWidget = () => {
       if (cancelled || !containerRef.current || !window.turnstile || widgetIdRef.current) {
@@ -82,24 +87,24 @@ export function TurnstileWidget({
             setToken(nextToken)
             setWidgetReady(true)
             setWidgetError("")
-            onTokenStateChange?.(Boolean(nextToken))
+            notifyTokenState(Boolean(nextToken))
           },
           "expired-callback": () => {
             setToken("")
             setWidgetReady(false)
-            onTokenStateChange?.(false)
+            notifyTokenState(false)
           },
           "error-callback": () => {
             setToken("")
             setWidgetReady(false)
             setWidgetError("Gagal memuat challenge Turnstile, silakan refresh halaman.")
-            onTokenStateChange?.(false)
+            notifyTokenState(false)
           },
           theme: "light",
         })
       } catch {
         setWidgetError("Widget Turnstile gagal dirender.")
-        onTokenStateChange?.(false)
+        notifyTokenState(false)
       }
     }
 
@@ -115,20 +120,20 @@ export function TurnstileWidget({
         existing.addEventListener("load", renderWidget)
         existing.addEventListener("error", () => {
           setWidgetError("Script Turnstile gagal dimuat.")
-          onTokenStateChange?.(false)
+          notifyTokenState(false)
         })
         return
       }
 
       const script = document.createElement("script")
       script.id = TURNSTILE_SCRIPT_ID
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+      script.src = TURNSTILE_SCRIPT_SRC
       script.async = true
       script.defer = true
       script.addEventListener("load", renderWidget)
       script.addEventListener("error", () => {
         setWidgetError("Script Turnstile gagal dimuat.")
-        onTokenStateChange?.(false)
+        notifyTokenState(false)
       })
       document.head.appendChild(script)
     }
@@ -137,19 +142,32 @@ export function TurnstileWidget({
 
     return () => {
       cancelled = true
-      parentForm?.removeEventListener("submit", handleFormSubmit)
       if (widgetIdRef.current && window.turnstile) {
         window.turnstile.remove(widgetIdRef.current)
         widgetIdRef.current = null
       }
     }
-  }, [missingSiteKey, onTokenStateChange, siteKey])
+  }, [missingSiteKey, siteKey])
+
+  // Token Turnstile hanya sekali pakai: reset setiap kali ada hasil submit baru
+  // (error maupun sukses) supaya submit berikutnya mendapat token baru.
+  // Hanya bergantung pada actionState, sehingga re-render parent tidak
+  // menghapus token yang baru saja didapat.
+  useEffect(() => {
+    if (!actionState || actionState.status === "idle") return
+    if (!widgetIdRef.current || !window.turnstile) return
+
+    window.turnstile.reset(widgetIdRef.current)
+    setToken("")
+    setWidgetReady(false)
+    onTokenStateChangeRef.current?.(false)
+  }, [actionState])
 
   return (
     <div className="space-y-2">
       <div
         ref={containerRef}
-        className="min-h-16 rounded-xl border border-[#dde3ef] bg-[#fbfcff] p-2"
+        className="flex min-h-[72px] w-full items-center justify-center py-2"
       />
       <input type="hidden" name={inputName} value={token} readOnly />
       {missingSiteKey ? (

@@ -1,7 +1,11 @@
 import Image from "next/image"
+import { redirect } from "next/navigation"
 
-import { getSocialPlatformPendingStatus } from "@/action"
-import { sanitizeFromUrl } from "@/action/helpers"
+import {
+  getSocialPlatformCallbackFailureStatus,
+  getSocialPlatformPendingStatus,
+} from "@/action"
+import { buildAuthPageUrl, sanitizeFromUrl } from "@/action/helpers"
 import { env } from "@/constants"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { SocialPlatformForm } from "@/components/auth/social-platform-form"
@@ -12,8 +16,15 @@ export const metadata = {
 
 type SocialPlatformPageProps = {
   params: Promise<{ token: string }>
-  searchParams: Promise<{ from?: string | string[] }>
+  searchParams: Promise<{
+    from?: string | string[]
+    connectedPlatformStatus?: string | string[]
+    connectedPlatformError?: string | string[]
+  }>
 }
+
+// Hanya kode error API (huruf besar dan underscore) yang ditampilkan dari query.
+const CALLBACK_ERROR_CODE_PATTERN = /^[A-Z_]{1,80}$/
 
 export default async function SocialPlatformPage({
   params,
@@ -27,7 +38,34 @@ export default async function SocialPlatformPage({
     typeof query.from === "string" ? query.from : env.POSTMATIC_DEFAULT_FROM_URL
   )
 
-  const status = await getSocialPlatformPendingStatus(token)
+  // Callback OAuth gagal sebelum kode koneksi dibuat: tampilkan errornya, lalu
+  // user mulai ulang dari workspace (login dulu bila perlu).
+  const callbackFailed =
+    query.connectedPlatformStatus === "failed" ||
+    query.connectedPlatformStatus === "cancelled"
+  const callbackError =
+    typeof query.connectedPlatformError === "string" &&
+    CALLBACK_ERROR_CODE_PATTERN.test(query.connectedPlatformError)
+      ? query.connectedPlatformError
+      : undefined
+
+  const status = callbackFailed
+    ? await getSocialPlatformCallbackFailureStatus(callbackError)
+    : await getSocialPlatformPendingStatus(token)
+
+  // Konfirmasi koneksi wajib login sebagai akun yang memulai koneksi. Setelah
+  // login, user kembali ke halaman ini (kode koneksi masih berlaku singkat), atau
+  // ke workspace bila callback gagal karena koneksi harus dimulai ulang.
+  const pageUrl = callbackFailed
+    ? from
+    : buildAuthPageUrl(
+        `/social-platform/${encodeURIComponent(token)}?from=${encodeURIComponent(from)}`
+      )
+  const loginUrl = `/login?from=${encodeURIComponent(pageUrl)}`
+
+  if (status.code === "MISSING_TOKEN") {
+    redirect(loginUrl)
+  }
 
   return (
     <AuthShell variant="social-platform">
@@ -49,7 +87,7 @@ export default async function SocialPlatformPage({
           </p>
         </div>
 
-        <SocialPlatformForm from={from} status={status} />
+        <SocialPlatformForm from={from} status={status} loginUrl={loginUrl} />
       </div>
     </AuthShell>
   )

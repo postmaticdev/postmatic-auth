@@ -4,14 +4,23 @@ import { redirect } from "next/navigation"
 
 import { callAuthApi } from "./auth-client"
 import { setAuthCookies } from "./cookies"
-import { humanizeResponseMessage, sanitizeFromUrl } from "./helpers"
+import {
+  buildRedirectWithTokens,
+  humanizeResponseMessage,
+  sanitizeFromUrl,
+} from "./helpers"
 import { verifyTurnstileToken } from "./turnstile"
 import type { ActionState, AuthLoginPayload } from "./types"
 
 const loginResponseMessageMap: Record<string, string> = {
   INVALID_CREDENTIALS: "Invalid Credentials. Please check your email and password.",
-  EMAIL_NOT_VERIFIED: "Email belum terverifikasi. Silakan cek inbox atau kirim ulang email verifikasi.",
-  PLEASE_WAIT: "Email verifikasi baru saja dikirim. Tunggu sebelum kirim ulang lagi.",
+  // Sama dengan INVALID_CREDENTIALS agar tidak membocorkan email terdaftar.
+  EMAIL_NOT_FOUND: "Invalid Credentials. Please check your email and password.",
+  EMAIL_NOT_VERIFIED: "Email not verified. Please check your inbox or resend the verification email.",
+  PLEASE_WAIT: "A verification email was just sent. Please wait before requesting another.",
+  ACCOUNT_USES_GOOGLE_SIGN_IN:
+    "This account signs in with Google. Continue with Google, or set a password via Forgot password.",
+  TOO_MANY_REQUESTS: "Too many sign-in attempts. Please wait before trying again.",
 }
 
 const extractRetryAfter = (payload: AuthLoginPayload | null | undefined): number | undefined => {
@@ -42,7 +51,7 @@ export const loginAction = async (
   if (!email || !password) {
     return {
       status: "error",
-      message: "Email dan password wajib diisi.",
+      message: "Email and password are required.",
       code: "INVALID_INPUT",
     }
   }
@@ -52,12 +61,12 @@ export const loginAction = async (
   if (!turnstile.ok) {
     return {
       status: "error",
-      message: "Verifikasi Turnstile gagal. Silakan coba ulang.",
+      message: "Turnstile verification failed. Please try again.",
       code: turnstile.reason,
     }
   }
 
-  const { ok, payload } = await callAuthApi<AuthLoginPayload>({
+  const { ok, payload, retryAfter } = await callAuthApi<AuthLoginPayload>({
     method: "POST",
     path: "/api/account/auth/login",
     body: {
@@ -72,7 +81,7 @@ export const loginAction = async (
       status: "error",
       message: getLoginErrorMessage(payload?.responseMessage),
       code: payload?.responseMessage,
-      retryAfter: extractRetryAfter(payload?.data ?? null),
+      retryAfter: extractRetryAfter(payload?.data ?? null) ?? retryAfter,
     }
   }
 
@@ -81,5 +90,7 @@ export const loginAction = async (
     refreshToken: payload.data.refreshToken,
   })
 
-  redirect(from)
+  redirect(
+    buildRedirectWithTokens(from, payload.data.accessToken, payload.data.refreshToken)
+  )
 }

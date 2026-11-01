@@ -31,19 +31,28 @@ export const verifyTurnstileToken = async (
     body.set("remoteip", remoteIp)
   }
 
-  const response = await fetch(
-    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: body.toString(),
-      cache: "no-store",
-    }
-  )
+  let payload: TurnstileResponse
 
-  const payload = (await response.json()) as TurnstileResponse
+  try {
+    const response = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: body.toString(),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10_000),
+      }
+    )
+    payload = (await response.json()) as TurnstileResponse
+  } catch {
+    return {
+      ok: false,
+      reason: "TURNSTILE_UNAVAILABLE",
+    }
+  }
 
   if (payload.success) {
     return {

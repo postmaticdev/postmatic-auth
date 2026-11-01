@@ -43,6 +43,8 @@ function GoogleIcon() {
   )
 }
 
+const GOOGLE_LOGIN_FORM_ID = "google-login-form"
+
 type LoginFormProps = {
   from: string
   initialEmail?: string
@@ -104,12 +106,12 @@ export function LoginForm({
         </Alert>
       ) : null}
 
-      <form action={googleAction} className="space-y-2">
+      <form id={GOOGLE_LOGIN_FORM_ID} action={googleAction} className="space-y-2">
         <input type="hidden" name="from" value={from} readOnly />
         <button
           type="submit"
           disabled={googlePending}
-          className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70"
+          className="w-full rounded-xl border border-gray-200 bg-white px-4 h-11 sm:h-10 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70"
         >
           <span className="flex items-center justify-center gap-3">
             <GoogleIcon />
@@ -140,7 +142,7 @@ export function LoginForm({
               autoComplete="email"
               placeholder="you@example.com"
               aria-invalid={form.formState.errors.email ? "true" : "false"}
-              className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-4 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="h-11 sm:h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pr-4 pl-10 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
               {...form.register("email")}
             />
           </div>
@@ -154,7 +156,7 @@ export function LoginForm({
             </Label>
             <Link
               href="/forgot-password"
-              className="text-xs font-medium text-blue-600 transition-colors hover:text-blue-700"
+              className="-my-2 inline-block py-2 text-sm font-medium text-blue-600 transition-colors hover:text-blue-700"
             >
               Forgot password?
             </Link>
@@ -167,7 +169,7 @@ export function LoginForm({
               autoComplete="current-password"
               placeholder="Enter your password"
               aria-invalid={form.formState.errors.password ? "true" : "false"}
-              className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-11 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="h-11 sm:h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pr-11 pl-10 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
               {...form.register("password")}
             />
             <button
@@ -175,7 +177,7 @@ export function LoginForm({
               onClick={() => {
                 setShowPassword((current) => !current)
               }}
-              className="absolute top-1/2 right-3.5 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+              className="absolute top-1/2 right-1 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-gray-600"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -184,27 +186,45 @@ export function LoginForm({
           <FieldError className="mt-1.5" errors={[form.formState.errors.password]} />
         </div>
 
-        <TurnstileWidget
-          onTokenStateChange={(hasToken) => {
-            setTurnstileAccepted(hasToken)
-          }}
-        />
+        <div className="w-full">
+          <TurnstileWidget
+            actionState={state}
+            onTokenStateChange={(hasToken) => {
+              setTurnstileAccepted(hasToken)
+            }}
+          />
+        </div>
 
         <FormMessage state={state} />
+
+        {state.code === "ACCOUNT_USES_GOOGLE_SIGN_IN" ? (
+          // Mengirim form Google di atas (form bertingkat tidak diizinkan).
+          <button
+            type="submit"
+            form={GOOGLE_LOGIN_FORM_ID}
+            disabled={googlePending}
+            className="w-full rounded-xl border border-gray-200 bg-white px-4 h-11 sm:h-10 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            <span className="flex items-center justify-center gap-3">
+              <GoogleIcon />
+              {googlePending ? "Preparing Google login..." : "Continue with Google"}
+            </span>
+          </button>
+        ) : null}
 
         <Button
           type="submit"
           disabled={isPending || !turnstileAccepted}
-          className="mt-2 h-auto w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
+          className="mt-2 h-11 sm:h-10 w-full rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
         >
-          {isPending ? "Signing in..." : "Sign in"}
+          {isPending ? "Signing in..." : "SIGN IN"}
         </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Don&apos;t have an account?{" "}
-        <Link href="/register" className="font-semibold text-blue-600 transition-colors hover:text-blue-700">
-          Sign up
+        <Link href={`/register?from=${encodeURIComponent(from)}`} className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700">
+          Sign Up
         </Link>
       </p>
     </div>

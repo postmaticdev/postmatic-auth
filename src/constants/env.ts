@@ -42,15 +42,20 @@ export const publicEnv = {
   // so Next.js can inline it at build/dev time.
   NEXT_PUBLIC_TURNSTILE_SITE_KEY:
     process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || "",
+  // Dokumen legal ada di landing page; tanpa prefix bahasa, landing memilih bahasa pengunjung.
+  NEXT_PUBLIC_LANDING_PAGE_URL: (
+    process.env.NEXT_PUBLIC_LANDING_PAGE_URL?.trim() || "https://postmatic.id"
+  ).replace(/\/+$/, ""),
 } as const
 
 export const env = {
   AUTH_API_BASE_URL: serverOnly("AUTH_API_BASE_URL").replace(/\/+$/, ""),
   POSTMATIC_APP_URL: optional("POSTMATIC_APP_URL", "https://auth.postmatic.id"),
   LANDING_PAGE_URL: optional("NEXT_PUBLIC_LANDING_PAGE_URL", "https://postmatic.id"),
+  // Where users land after signing in when no (valid) `from` is given.
   POSTMATIC_DEFAULT_FROM_URL: optional(
     "POSTMATIC_DEFAULT_FROM_URL",
-    "https://dashboard.postmatic.id"
+    "https://workspace.postmatic.id"
   ),
   POSTMATIC_COOKIE_DOMAIN: optional("POSTMATIC_COOKIE_DOMAIN", ".postmatic.id"),
   POSTMATIC_COOKIE_SECURE: asBoolean(
@@ -85,6 +90,12 @@ export const env = {
     ""
   ),
   TURNSTILE_SECRET_KEY: serverOnly("TURNSTILE_SECRET_KEY"),
+  // Shared with the API (same name there). When set, API calls carry it with
+  // the visitor's IP so the API rate-limits per visitor, not per auth server.
+  AUTH_TRUSTED_PROXY_SECRET: optional("AUTH_TRUSTED_PROXY_SECRET", ""),
+  // Request header holding the visitor's IP as set by the hosting edge (not
+  // the visitor): x-forwarded-for on Vercel, cf-connecting-ip behind Cloudflare.
+  AUTH_CLIENT_IP_HEADER: optional("AUTH_CLIENT_IP_HEADER", "x-forwarded-for").toLowerCase(),
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: publicEnv.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
 } as const
 

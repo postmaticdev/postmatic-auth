@@ -1,5 +1,37 @@
 import { env } from "@/constants"
 
+// Sama dengan newPasswordSchema di lib/validation/auth.ts dan validasi API
+// (min=8,max=72).
+const NEW_PASSWORD_REGEX = /^[\x20-\x7E]{8,72}$/
+
+export const NEW_PASSWORD_RULE_MESSAGE =
+  "Password harus 8-72 karakter dan hanya berisi huruf, angka, atau simbol standar."
+
+export const getNewPasswordError = (password: string): string | null => {
+  if (password !== password.trim()) {
+    return "Password tidak boleh diawali atau diakhiri spasi."
+  }
+  if (!NEW_PASSWORD_REGEX.test(password)) {
+    return NEW_PASSWORD_RULE_MESSAGE
+  }
+  return null
+}
+
+// true bila API menolak field ini (responseMessage VALIDATION_FAILED).
+export const hasValidationError = (
+  validationErrors: Record<string, string> | null | undefined,
+  field: string
+): boolean => Boolean(validationErrors?.[field])
+
+// URL absolut halaman di situs auth ini, untuk `from` saat diarahkan ke login.
+export const buildAuthPageUrl = (path: string): string =>
+  `${env.POSTMATIC_APP_URL.replace(/\/+$/, "")}${path}`
+
+const LOCAL_DEV_HOSTNAMES = new Set(["localhost", "127.0.0.1"])
+
+export const isLocalDevHostname = (hostname: string): boolean =>
+  LOCAL_DEV_HOSTNAMES.has(hostname.toLowerCase())
+
 export const sanitizeFromUrl = (input?: string | null): string => {
   const fallback = env.POSTMATIC_DEFAULT_FROM_URL
 
@@ -9,14 +41,17 @@ export const sanitizeFromUrl = (input?: string | null): string => {
 
   try {
     const parsed = new URL(input)
-    const protocolAllowed = parsed.protocol === "https:" || parsed.protocol === "http:"
 
-    if (!protocolAllowed) {
-      return fallback
+    // http hanya untuk dev lokal; domain Postmatic wajib https agar token/
+    // cookie tidak pernah dikirim lewat koneksi tanpa enkripsi.
+    if (isLocalDevHostname(parsed.hostname)) {
+      return parsed.protocol === "http:" || parsed.protocol === "https:"
+        ? parsed.toString()
+        : fallback
     }
 
-    if (parsed.hostname === "localhost") {
-      return parsed.toString()
+    if (parsed.protocol !== "https:") {
+      return fallback
     }
 
     if (parsed.hostname === "postmatic.id") {
@@ -38,6 +73,14 @@ export const humanizeResponseMessage = (value?: string): string => {
     return "Terjadi kesalahan. Coba lagi."
   }
 
+  if (value === "SERVICE_UNAVAILABLE") {
+    return "Server sedang tidak dapat dihubungi. Coba lagi beberapa saat."
+  }
+
+  if (value === "TOO_MANY_REQUESTS") {
+    return "Terlalu banyak percobaan. Tunggu sebentar sebelum mencoba lagi."
+  }
+
   return value
     .split("_")
     .filter(Boolean)
@@ -45,12 +88,21 @@ export const humanizeResponseMessage = (value?: string): string => {
     .join(" ")
 }
 
+/**
+ * Token hanya ditempel ke URL untuk tujuan localhost (dev app lokal dengan auth
+ * staging/production), karena cookie domain .postmatic.id tidak bisa sampai
+ * ke localhost. Untuk domain Postmatic sesi sudah ada di cookie, jadi token
+ * tidak boleh muncul di URL (bocor ke history, log, Referer).
+ */
 export const buildRedirectWithTokens = (
   targetUrl: string,
   accessToken: string,
   refreshToken: string
 ): string => {
   const url = new URL(targetUrl)
+  if (!isLocalDevHostname(url.hostname)) {
+    return url.toString()
+  }
   url.searchParams.set(env.POSTMATIC_ACCESS_QUERY_KEY, accessToken)
   url.searchParams.set(env.POSTMATIC_REFRESH_QUERY_KEY, refreshToken)
   return url.toString()

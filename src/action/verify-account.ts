@@ -3,9 +3,7 @@
 import { redirect } from "next/navigation"
 
 import { callAuthApi } from "./auth-client"
-import { setAuthCookies } from "./cookies"
 import {
-  buildRedirectWithTokens,
   humanizeResponseMessage,
   sanitizeFromUrl,
 } from "./helpers"
@@ -18,12 +16,15 @@ import type {
 } from "./types"
 
 const verifyResponseMessageMap: Record<string, string> = {
-  INVALID_CREATE_ACCOUNT_TOKEN: "Link verifikasi tidak valid atau sudah kedaluwarsa.",
+  // API juga menolak link verifikasi lama untuk akun yang sudah masuk dengan Google.
+  INVALID_CREATE_ACCOUNT_TOKEN:
+    "Link verifikasi tidak valid atau sudah kedaluwarsa. Jika akun ini terhubung dengan Google, masuk dengan Google atau atur password lewat Lupa password.",
   USER_ALREADY_VERIFIED: "Akun ini sudah terverifikasi. Silakan login.",
   CHECK_VERIFY_TOKEN_SUCCESS: "Link verifikasi valid.",
   SUBMIT_VERIFY_TOKEN_SUCCESS: "Akun berhasil diverifikasi.",
   USER_NOT_FOUND: "Akun tidak ditemukan.",
   PLEASE_WAIT: "Email verifikasi baru saja dikirim. Tunggu sebelum kirim ulang lagi.",
+  TOO_MANY_REQUESTS: "Terlalu banyak percobaan. Tunggu sebentar sebelum mencoba lagi.",
 }
 
 const extractEmailFromJwt = (token: string): string | undefined => {
@@ -94,7 +95,7 @@ export const getVerifyTokenStatus = async (
 
   const { ok, payload } = await callAuthApi<AuthVerifyStatusPayload>({
     method: "GET",
-    path: `/api/account/auth/verify/${token}`,
+    path: `/api/account/auth/verify/${encodeURIComponent(token)}`,
   })
 
   if (!ok || !payload?.data) {
@@ -143,37 +144,23 @@ export const verifyAccountAction = async (
     }
   }
 
-  const { ok, payload } = await callAuthApi<AuthVerifyPayload>({
+  const { ok, payload, retryAfter } = await callAuthApi<AuthVerifyPayload>({
     method: "POST",
-    path: `/api/account/auth/verify/${token}?from=${encodeURIComponent(from)}`,
+    path: `/api/account/auth/verify/${encodeURIComponent(token)}?from=${encodeURIComponent(from)}`,
   })
 
-  if (!ok || !payload?.data?.accessToken || !payload?.data?.refreshToken) {
-    if (payload?.responseMessage === "USER_ALREADY_VERIFIED") {
-      redirect(
-        `/login?verified=1&email=${encodeURIComponent(email)}&from=${encodeURIComponent(from)}`
-      )
-    }
-
+  if (!ok && payload?.responseMessage !== "USER_ALREADY_VERIFIED") {
     return {
       status: "error",
       message: getVerifyMessage(payload?.responseMessage),
       code: payload?.responseMessage,
-      retryAfter: getRetryAfter(payload?.data),
+      retryAfter: getRetryAfter(payload?.data) ?? retryAfter,
     }
   }
 
-  await setAuthCookies({
-    accessToken: payload.data.accessToken,
-    refreshToken: payload.data.refreshToken,
-  })
-
+  // Alur: verifikasi berhasil -> user diarahkan ke halaman login (tidak auto-login).
   redirect(
-    buildRedirectWithTokens(
-      from,
-      payload.data.accessToken,
-      payload.data.refreshToken
-    )
+    `/login?verified=1&email=${encodeURIComponent(email)}&from=${encodeURIComponent(from)}`
   )
 }
 
@@ -203,7 +190,7 @@ export const resendVerificationEmailAction = async (
     }
   }
 
-  const { ok, payload } = await callAuthApi<AuthRegisterPayload>({
+  const { ok, payload, retryAfter } = await callAuthApi<AuthRegisterPayload>({
     method: "POST",
     path: "/api/account/auth/resend-email-verification",
     body: {
@@ -212,19 +199,21 @@ export const resendVerificationEmailAction = async (
     },
   })
 
-  if (!ok) {
+  // USER_NOT_FOUND dijawab sama seperti sukses agar tidak membocorkan email
+  // mana yang terdaftar.
+  if (!ok && payload?.responseMessage !== "USER_NOT_FOUND") {
     return {
       status: "error",
       message: getVerifyMessage(payload?.responseMessage),
       code: payload?.responseMessage,
-      retryAfter: getRetryAfter(payload?.data),
+      retryAfter: getRetryAfter(payload?.data) ?? retryAfter,
     }
   }
 
   return {
     status: "success",
-    message: "Email verifikasi berhasil dikirim ulang.",
-    code: payload?.responseMessage,
+    message: "Jika akun terdaftar dan belum terverifikasi, email verifikasi telah dikirim.",
+    code: ok ? payload?.responseMessage : undefined,
     retryAfter: getRetryAfter(payload?.data),
   }
 }

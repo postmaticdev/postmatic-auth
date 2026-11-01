@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Building2, Globe, Mail, ShieldCheck, UserRound } from "lucide-react"
 
 import {
@@ -23,7 +24,30 @@ import type { SocialPlatformAccountPayload } from "@/action/types"
 type SocialPlatformFormProps = {
   from: string
   status: SocialPlatformPendingStatusResult
+  // Login lalu kembali ke halaman konfirmasi ini.
+  loginUrl: string
 }
+
+// Perlu login (ulang) sebagai akun Postmatic yang memulai koneksi.
+const SIGN_IN_REQUIRED_CODES = new Set([
+  "MISSING_TOKEN",
+  "MISSING_AUTH_CONTEXT",
+  "INVALID_OR_EXPIRED_TOKEN",
+  "CONNECTED_PLATFORM_OAUTH_INITIATOR_MISMATCH",
+])
+
+// Kode koneksi sudah dipakai/kedaluwarsa: harus mulai ulang dari workspace.
+const RESTART_REQUIRED_CODES = new Set([
+  "CONNECTED_PLATFORM_TEMP_CODE_NOT_FOUND",
+  "CONNECTED_PLATFORM_TEMP_CODE_ACCOUNT_NOT_FOUND",
+  "CONNECTED_PLATFORM_STATE_ALREADY_USED",
+  "CONNECTED_PLATFORM_AUTHORIZATION_CANCELLED",
+])
+
+const getSignInLabel = (code?: string): string =>
+  code === "CONNECTED_PLATFORM_OAUTH_INITIATOR_MISMATCH"
+    ? "Masuk dengan akun lain"
+    : "Masuk untuk melanjutkan"
 
 const toTitleCase = (value: string): string =>
   value
@@ -48,30 +72,36 @@ const getSafeUrl = (value?: string | null): string | null => {
   }
 }
 
-const renderAccountAvatar = (account: SocialPlatformAccountPayload) => {
+// Avatar URL dari provider (LinkedIn, Facebook CDN) bisa kedaluwarsa; tampilkan
+// ikon default bila gambar gagal dimuat.
+function AccountAvatar({ account }: { account: SocialPlatformAccountPayload }) {
   const iconUrl = getSafeUrl(account.platformIconUrl)
+  const [failedUrl, setFailedUrl] = useState<string | null>(null)
 
-  if (!iconUrl) {
+  if (!iconUrl || failedUrl === iconUrl) {
     return (
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-gray-50">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50">
         <UserRound className="h-5 w-5 text-gray-400" />
       </div>
     )
   }
 
   return (
-    <div className="h-10 w-10 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-      <div
-        className="h-full w-full bg-cover bg-center"
-        role="img"
-        aria-label={`Avatar ${account.platformUserName}`}
-        style={{ backgroundImage: `url('${iconUrl}')` }}
+    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={iconUrl}
+        alt={`Avatar ${account.platformUserName}`}
+        referrerPolicy="no-referrer"
+        className="h-full w-full object-cover"
+        onError={() => setFailedUrl(iconUrl)}
       />
     </div>
   )
 }
 
-export function SocialPlatformForm({ from, status }: SocialPlatformFormProps) {
+export function SocialPlatformForm({ from, status, loginUrl }: SocialPlatformFormProps) {
+  const router = useRouter()
   const pendingData = status.data
   const accounts = pendingData?.accounts ?? []
   const defaultSelectedAccount =
@@ -96,14 +126,48 @@ export function SocialPlatformForm({ from, status }: SocialPlatformFormProps) {
           <AlertDescription>{status.message}</AlertDescription>
         </Alert>
 
-        <p className="text-center text-sm text-gray-500">
-          <Link
-            href={from}
-            className="font-semibold text-blue-600 transition-colors hover:text-blue-700"
+        {status.code && SIGN_IN_REQUIRED_CODES.has(status.code) ? (
+          <Button
+            asChild
+            className="h-11 sm:h-10 w-full bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700"
           >
-            Kembali ke halaman sebelumnya
-          </Link>
-        </p>
+            <Link href={loginUrl}>{getSignInLabel(status.code)}</Link>
+          </Button>
+        ) : null}
+
+        {status.code && RESTART_REQUIRED_CODES.has(status.code) ? (
+          <Button
+            asChild
+            className="h-11 sm:h-10 w-full bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700"
+          >
+            <Link href={from}>Mulai ulang dari workspace</Link>
+          </Button>
+        ) : null}
+
+        {!status.code ||
+        (!SIGN_IN_REQUIRED_CODES.has(status.code) && !RESTART_REQUIRED_CODES.has(status.code)) ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              router.refresh()
+            }}
+            className="h-11 sm:h-10 w-full text-sm font-semibold"
+          >
+            Coba lagi
+          </Button>
+        ) : null}
+
+        {status.code && RESTART_REQUIRED_CODES.has(status.code) ? null : (
+          <p className="text-center text-sm text-gray-500">
+            <Link
+              href={from}
+              className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700"
+            >
+              Kembali ke halaman sebelumnya
+            </Link>
+          </p>
+        )}
       </div>
     )
   }
@@ -215,10 +279,10 @@ export function SocialPlatformForm({ from, status }: SocialPlatformFormProps) {
                   <RadioGroupItem
                     id={account.tempCodeAccount}
                     value={account.tempCodeAccount}
-                    className="mt-1"
+                    className="mt-0.5 size-5 border-gray-300 bg-white focus-visible:border-blue-600 focus-visible:ring-blue-600/30 data-checked:border-blue-600 data-checked:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white"
                   />
 
-                  {renderAccountAvatar(account)}
+                  <AccountAvatar account={account} />
 
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-gray-900">
@@ -233,12 +297,12 @@ export function SocialPlatformForm({ from, status }: SocialPlatformFormProps) {
                     ) : null}
                     <div className="mt-2 flex flex-wrap gap-1">
                       {account.platformScopes.slice(0, 5).map((scope) => (
-                        <Badge key={scope} variant="outline" className="text-[10px]">
+                        <Badge key={scope} variant="outline" className="text-xs">
                           {scope}
                         </Badge>
                       ))}
                       {account.platformScopes.length > 5 ? (
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge variant="outline" className="text-xs">
                           +{account.platformScopes.length - 5}
                         </Badge>
                       ) : null}
@@ -252,13 +316,35 @@ export function SocialPlatformForm({ from, status }: SocialPlatformFormProps) {
 
         <FormMessage state={submitState} />
 
+        {submitState.code && SIGN_IN_REQUIRED_CODES.has(submitState.code) ? (
+          <p className="text-center text-sm text-gray-500">
+            <Link
+              href={loginUrl}
+              className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700"
+            >
+              {getSignInLabel(submitState.code)}
+            </Link>
+          </p>
+        ) : null}
+
+        {submitState.code && RESTART_REQUIRED_CODES.has(submitState.code) ? (
+          <p className="text-center text-sm text-gray-500">
+            <Link
+              href={from}
+              className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700"
+            >
+              Mulai ulang dari workspace
+            </Link>
+          </p>
+        ) : null}
+
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Button
             type="button"
             variant="outline"
             disabled={submitPending}
             asChild
-            className="h-auto py-3 text-sm font-semibold"
+            className="h-11 sm:h-10 text-sm font-semibold"
           >
             <Link href={from}>Batal</Link>
           </Button>
@@ -266,7 +352,7 @@ export function SocialPlatformForm({ from, status }: SocialPlatformFormProps) {
           <Button
             type="submit"
             disabled={submitPending || !selectedAccount}
-            className="h-auto bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+            className="order-first h-11 sm:order-none sm:h-10 bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700"
           >
             {submitPending ? "Menghubungkan..." : "Ya, hubungkan akun"}
           </Button>

@@ -1,29 +1,34 @@
 "use client"
 
-import { startTransition, useActionState, useMemo, useState } from "react"
+import { startTransition, useActionState, useState } from "react"
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Eye, EyeOff, Lock, Mail, User } from "lucide-react"
-import { useForm, useWatch } from "react-hook-form"
+import { useForm } from "react-hook-form"
 
 import { initialActionState, registerAction } from "@/action"
 import { FormMessage } from "@/components/auth/form-message"
 import { TurnstileWidget } from "@/components/auth/turnstile-widget"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { legalLinks } from "@/lib/legal-links"
 import {
+  NEW_PASSWORD_HINT,
   registerFormSchema,
   type RegisterFormValues,
 } from "@/lib/validation/auth"
 
 type RegisterFormProps = {
   from: string
+  initialEmail?: string
 }
 
-export function RegisterForm({ from }: RegisterFormProps) {
+export function RegisterForm({ from, initialEmail = "" }: RegisterFormProps) {
   const [turnstileAccepted, setTurnstileAccepted] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [state, formAction, isPending] = useActionState(
@@ -35,25 +40,11 @@ export function RegisterForm({ from }: RegisterFormProps) {
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
       name: "",
-      email: "",
+      email: initialEmail,
       password: "",
       confirmPassword: "",
     },
   })
-
-  const password = useWatch({ control: form.control, name: "password" }) ?? ""
-  const confirmPassword = useWatch({
-    control: form.control,
-    name: "confirmPassword",
-  }) ?? ""
-
-  const passwordMatchState = useMemo(() => {
-    if (!confirmPassword.length) {
-      return "idle"
-    }
-
-    return password === confirmPassword ? "match" : "mismatch"
-  }, [confirmPassword, password])
 
   const submitRegister = form.handleSubmit((_values, event) => {
     const formElement = event?.target as HTMLFormElement | undefined
@@ -82,7 +73,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
             id="name"
             placeholder="John Doe"
             aria-invalid={form.formState.errors.name ? "true" : "false"}
-            className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-4 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="h-11 sm:h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pr-4 pl-10 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
             {...form.register("name")}
           />
         </div>
@@ -101,7 +92,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
             autoComplete="email"
             placeholder="you@example.com"
             aria-invalid={form.formState.errors.email ? "true" : "false"}
-            className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-4 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="h-11 sm:h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pr-4 pl-10 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
             {...form.register("email")}
           />
         </div>
@@ -120,7 +111,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
             autoComplete="new-password"
             placeholder="Create a strong password"
             aria-invalid={form.formState.errors.password ? "true" : "false"}
-            className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-11 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="h-11 sm:h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pr-11 pl-10 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
             {...form.register("password")}
           />
           <button
@@ -128,7 +119,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
             onClick={() => {
               setShowPassword((current) => !current)
             }}
-            className="absolute top-1/2 right-3.5 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+            className="absolute top-1/2 right-1 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-gray-600"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -136,7 +127,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
         </div>
         <FieldError className="mt-1.5" errors={[form.formState.errors.password]} />
         <p className="mt-1.5 text-xs text-gray-500">
-          Password must be minimum 6 characters and alphanumeric only.
+          {NEW_PASSWORD_HINT}
         </p>
       </div>
 
@@ -155,7 +146,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
             autoComplete="new-password"
             placeholder="Repeat your password"
             aria-invalid={form.formState.errors.confirmPassword ? "true" : "false"}
-            className="h-auto w-full rounded-xl border-gray-200 bg-gray-50/50 py-3 pr-11 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="h-11 sm:h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pr-11 pl-10 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
             {...form.register("confirmPassword")}
           />
           <button
@@ -163,7 +154,7 @@ export function RegisterForm({ from }: RegisterFormProps) {
             onClick={() => {
               setShowConfirmPassword((current) => !current)
             }}
-            className="absolute top-1/2 right-3.5 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+            className="absolute top-1/2 right-1 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-gray-600"
             aria-label={showConfirmPassword ? "Hide password" : "Show password"}
           >
             {showConfirmPassword ? (
@@ -174,34 +165,72 @@ export function RegisterForm({ from }: RegisterFormProps) {
           </button>
         </div>
         <FieldError className="mt-1.5" errors={[form.formState.errors.confirmPassword]} />
-        {passwordMatchState === "mismatch" ? (
-          <p className="mt-1.5 text-xs text-red-500">Passwords do not match.</p>
-        ) : null}
-        {passwordMatchState === "match" ? (
-          <p className="mt-1.5 text-xs text-green-600">Passwords match.</p>
-        ) : null}
       </div>
 
-      <TurnstileWidget
-        onTokenStateChange={(hasToken) => {
-          setTurnstileAccepted(hasToken)
-        }}
-      />
+      <div className="w-full">
+        <TurnstileWidget
+          actionState={state}
+          onTokenStateChange={(hasToken) => {
+            setTurnstileAccepted(hasToken)
+          }}
+        />
+      </div>
+
+      <div className="flex items-start gap-3">
+        <Checkbox 
+          id="terms" 
+          checked={termsAccepted} 
+          onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} 
+          className="mt-0.5 size-5 data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600"
+        />
+        <input type="hidden" name="terms" value={termsAccepted ? "true" : "false"} />
+        <label
+          htmlFor="terms"
+          className="text-sm font-medium leading-snug text-gray-600 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          I have read and agree to the{" "}
+          <a
+            href={legalLinks.termsAndConditions.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-700 hover:underline"
+          >
+            {legalLinks.termsAndConditions.label}
+          </a>{" "}
+          and the{" "}
+          <a
+            href={legalLinks.privacyPolicy.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-700 hover:underline"
+          >
+            {legalLinks.privacyPolicy.label}
+          </a>
+        </label>
+      </div>
 
       <FormMessage state={state} />
 
+      {state.code === "ACCOUNT_USES_GOOGLE_SIGN_IN" ? (
+        <Button type="button" variant="outline" asChild className="h-11 sm:h-10 w-full rounded-xl text-sm font-medium">
+          <Link href={`/login?from=${encodeURIComponent(from)}`}>
+            Sign in with Google instead
+          </Link>
+        </Button>
+      ) : null}
+
       <Button
         type="submit"
-        disabled={isPending || !turnstileAccepted}
-        className="mt-2 h-auto w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
+        disabled={isPending || !turnstileAccepted || !termsAccepted}
+        className="mt-2 h-11 sm:h-10 w-full rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-300"
       >
-        {isPending ? "Creating account..." : "Create account"}
+        {isPending ? "Signing up..." : "SIGN UP"}
       </Button>
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-blue-600 transition-colors hover:text-blue-700">
-          Login
+        <Link href={`/login?from=${encodeURIComponent(from)}`} className="-my-2 inline-block py-2 font-semibold text-blue-600 transition-colors hover:text-blue-700">
+          Sign In
         </Link>
       </p>
     </form>

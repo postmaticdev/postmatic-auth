@@ -10,7 +10,7 @@ export const metadata = {
 }
 
 type RegisterPageProps = {
-  searchParams: Promise<{ from?: string | string[] }>
+  searchParams: Promise<{ from?: string | string[]; email?: string | string[] }>
 }
 
 export default async function RegisterPage({ searchParams }: RegisterPageProps) {
@@ -22,7 +22,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
   return (
     <AuthShell variant="signup">
       <div className="w-full max-w-md">
-        <div className="mb-8 flex flex-col items-center justify-center lg:items-start lg:justify-start">
+        <div className="mb-8 flex flex-col items-center justify-center text-center">
           <div className="mb-6 flex items-center gap-2 lg:hidden">
             <Image
               src="/logofull.png"
@@ -33,13 +33,16 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
             />
           </div>
 
-          <h2 className="mb-1 text-2xl font-bold text-gray-900">Create an account</h2>
+          <h2 className="mb-1 text-2xl font-bold text-gray-900">SIGN UP</h2>
           <p className="text-sm text-gray-500">
             Start your journey with Postmatic today.
           </p>
         </div>
 
-        <RegisterForm from={from} />
+        <RegisterForm
+          from={from}
+          initialEmail={typeof query.email === "string" ? query.email : ""}
+        />
       </div>
     </AuthShell>
   )

@@ -37,17 +37,17 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const reset = asSingle(query.reset) === "1";
 
   const notice = reset
-    ? "Password berhasil direset. Silakan login dengan password baru."
+    ? "Password successfully reset. Please sign in with your new password."
     : registered
-      ? "Registrasi berhasil. Cek email untuk verifikasi akun sebelum login."
+      ? "Registration successful. Please check your email to verify your account before signing in."
       : verified
-        ? "Akun sudah terverifikasi. Silakan login."
+        ? "Account verified. Please sign in."
         : "";
 
   return (
     <AuthShell variant="login">
       <div className="w-full max-w-md">
-        <div className="mb-8 flex flex-col items-center justify-center lg:items-start lg:justify-start">
+        <div className="mb-8 flex flex-col items-center justify-center text-center">
           <div className="mb-6 flex items-center gap-2 lg:hidden">
             <Image
               src="/logofull.png"
@@ -57,7 +57,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               className="h-10 w-10 rounded-lg"
             />
           </div>
-          <h2 className="mb-1 text-2xl font-bold text-gray-900">Sign in</h2>
+          <h2 className="mb-1 text-2xl font-bold text-gray-900">SIGN IN</h2>
           <p className="text-sm text-gray-500">
             Welcome back! Please enter your details.
           </p>
@@ -67,29 +67,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           from={from}
           initialEmail={email}
           notice={notice}
-          focusPassword={registered || verified}
+          focusPassword={verified}
         />
 
-        <p className="mt-8 text-center text-xs text-gray-500">
-          <Link
-            href={env.LANDING_PAGE_URL + "/en/cookie-policy" as string}
-            className="transition-colors hover:text-gray-700"
-          >
-            Cookie Policy
-          </Link>{" "}
-          |{" "}
-          <Link href={env.LANDING_PAGE_URL + "/en/data-deletion" as string} className="transition-colors hover:text-gray-700">
-            Data Deletion
-          </Link>{" "}
-          |{" "}
-          <Link href={env.LANDING_PAGE_URL + "/en/privacy-policy" as string} className="transition-colors hover:text-gray-700">
-            Privacy Policy
-          </Link>{" "}
-          |{" "}
-          <Link href={env.LANDING_PAGE_URL + "/en/terms-of-service" as string} className="transition-colors hover:text-gray-700">
-            Terms of Service
-          </Link>
-        </p>
       </div>
     </AuthShell>
   );
